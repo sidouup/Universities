@@ -29,6 +29,9 @@ def load_data(spreadsheet_id, sheet_name):
     df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce')
     df['Application Fee Price'] = pd.to_numeric(df['Application Fee Price'], errors='coerce')
     
+    # Add 40 to all application fees
+    df['Application Fee Price'] = df['Application Fee Price'] + 40
+    
     return df
 
 # Function to implement fuzzy matching
