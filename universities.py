@@ -224,13 +224,10 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-
     # Replace with your Google Sheet ID and sheet name
     SPREADSHEET_ID = "1gCxnCOhQRHtVdVMSiLaReBRJbCUz1Wn6-KJRZshneuM"
     SHEET_NAME = "cleaned_universities_data"
 
-
-    # Load the data
     # Load the data
     df = load_data(SPREADSHEET_ID, SHEET_NAME)
 
@@ -244,7 +241,8 @@ def main():
             'specialty': 'All',
             'institution_type': 'All',
             'tuition_min': int(df['Tuition Price'].min()),
-            'tuition_max': int(df['Tuition Price'].max())
+            'tuition_max': int(df['Tuition Price'].max()),
+            'french_only': False  # New filter flag for French
         }
     if 'reset_filters' not in st.session_state:
         st.session_state.reset_filters = False
@@ -261,7 +259,8 @@ def main():
             'specialty': 'All',
             'institution_type': 'All',
             'tuition_min': int(df['Tuition Price'].min()),
-            'tuition_max': int(df['Tuition Price'].max())
+            'tuition_max': int(df['Tuition Price'].max()),
+            'french_only': False  # Reset French filter
         }
         st.session_state.reset_filters = False
         st.session_state.apply_after_reset = True
@@ -336,6 +335,9 @@ def main():
         key='tuition_filter'
     )
 
+    # French language filter checkbox
+    st.session_state.filters['french_only'] = st.checkbox("Only show universities with 'French' in Specialty", value=st.session_state.filters['french_only'])
+
     col1, col2 = st.columns(2)
     with col1:
         apply_filters = st.button("Apply Filter")
@@ -369,6 +371,10 @@ def main():
             (filtered_df['Tuition Price'] >= st.session_state.filters['tuition_min']) & 
             (filtered_df['Tuition Price'] <= st.session_state.filters['tuition_max'])
         ]
+
+        # Apply French language filter
+        if st.session_state.filters['french_only']:
+            filtered_df = filtered_df[filtered_df['Speciality'].str.contains('French', case=False, na=False)]
         
         st.session_state.filtered_df = filtered_df
         st.session_state.current_page = 1  # Reset to first page when new filter is applied
