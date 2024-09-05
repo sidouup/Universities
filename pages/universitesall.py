@@ -61,14 +61,14 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
     
-    # Custom CSS for styling
+    # Custom CSS for modern styling
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
     
     body {
         font-family: 'Roboto', sans-serif;
-        background-color: #ffffff;
+        background-color: #f9f9f9;
         color: #333333;
     }
     
@@ -76,74 +76,131 @@ def main():
         background-color: #ffffff;
     }
     
+    .sidebar .sidebar-content {
+        background-color: #f8f9fa;
+        padding: 15px;
+    }
+    
+    [data-testid="stSidebar"] {
+        min-width: 250px !important;
+        max-width: 250px !important;
+    }
+    
+    .stSelectbox, .stMultiSelect, .stSlider {
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        padding: 8px;
+        margin-bottom: 15px;
+    }
+    
     .university-card {
         background: #ffffff;
         border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 15px;
+        border-radius: 15px;
+        padding: 20px;
         margin-bottom: 20px;
-        min-height: 500px;
+        min-height: 550px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
     
     .university-card:hover {
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
-
+    
     .university-header {
         display: flex;
         align-items: center;
         margin-bottom: 15px;
     }
-
+    
     .university-logo {
-        width: 50px;
-        height: 50px;
-        margin-right: 10px;
+        width: 60px;
+        height: 60px;
+        margin-right: 15px;
         object-fit: contain;
     }
-
+    
     .university-name {
-        font-size: 1.2rem;
+        font-size: 1.5rem;
         font-weight: bold;
         color: #333333;
-        text-align: center;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
     }
-
+    
     .speciality-name {
         font-size: 1rem;
         margin-bottom: 15px;
         color: #555555;
-        text-align: center;
+        text-align: left;
+        text-decoration: underline;
     }
-
+    
+    .info-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-size: 0.95rem;
+    }
+    
     .info-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
         font-size: 0.9rem;
         color: #666666;
     }
-
+    
     .info-row span:first-child {
         font-weight: bold;
     }
-
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+    }
+    
     .page-info {
         margin: 0 10px;
-        font-size: 1rem;
-        text-align: center;
+        font-size: 1.1rem;
     }
-
+    
+    .stButton > button {
+        background-color: #1e88e5;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        background-color: #1565c0;
+    }
+    
+    h1, h2, h3 {
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+    }
     </style>
     """, unsafe_allow_html=True)
 
     # Replace with your Google Sheet ID
-    SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
+    SPREADSHEET_ID = "your_google_sheet_id_here"
 
     # Initialize session state for filters
     if 'filters' not in st.session_state:
@@ -157,6 +214,30 @@ def main():
             'tuition_min': 0,
             'tuition_max': 100000  # Default range for tuition
         }
+
+    # Load filter options (Replace these with dynamic options from the dataset)
+    major_options = ["All", "Engineering", "Business", "Arts"]  # Example options
+    country_options = ["All", "USA", "Canada", "UK"]
+    level_options = ["All", "Bachelor's", "Master's", "PhD"]
+    field_options = ["All", "Engineering and Technology", "Health Sciences", "Arts and Humanities"]
+    specialty_options = ["All", "Computer Science", "Business Administration", "Graphic Design"]
+    institution_options = ["All", "University", "College", "Institute"]
+
+    # Filters
+    st.session_state.filters['major'] = st.selectbox("Major", major_options)
+    st.session_state.filters['country'] = st.selectbox("Country", country_options)
+    st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options)
+    st.session_state.filters['field'] = st.selectbox("Field", field_options)
+    st.session_state.filters['specialty'] = st.selectbox("Specialty", specialty_options)
+    st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
+
+    # Tuition Range Filter
+    st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
+        "Tuition Fee Range (CAD)",
+        min_value=0,
+        max_value=100000,  # Adjust max value based on your data
+        value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
+    )
 
     # Load filtered data with a limit of 10,000 rows
     df = load_filtered_data(
@@ -183,6 +264,7 @@ def main():
     start_idx = (st.session_state.current_page - 1) * items_per_page
     end_idx = start_idx + items_per_page
 
+    # Display universities in a grid of 4 columns per row
     for i in range(0, min(items_per_page, len(df) - start_idx), 4):
         cols = st.columns(4)
         for j in range(4):
@@ -203,11 +285,15 @@ def main():
                             </div>
                             <div class="info-row">
                                 <span>Tuition:</span>
-                                <span>${row.get('Tuition Price', 'N/A'):,.0f}</span>
+                                <span>${row.get('Tuition Price', 'N/A'):,.0f} {row.get('Tuition Currency', '')}</span>
                             </div>
                             <div class="info-row">
                                 <span>Application Fee:</span>
-                                <span>${row.get('Application Fee Price', 'N/A'):,.0f}</span>
+                                <span>${row.get('Application Fee Price', 'N/A'):,.0f} {row.get('Application Fee Currency', '')}</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Program Level:</span>
+                                <span>{row.get('Level', 'N/A')}</span>
                             </div>
                         </div>
                     </div>
