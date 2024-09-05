@@ -274,46 +274,48 @@ def main():
                 prime_tags = [row[f'prime {k}'] for k in range(2, 6) if pd.notna(row[f'prime {k}'])]
                 prime_tags_html = ''.join([f'<span class="prime-tag">{tag}</span>' for tag in prime_tags])
     
-                st.markdown(f'''
-                <div class="university-card">
-                    <div class="university-header">
-                        <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
-                        <div class="university-name" style="font-size: 1.2rem;">{row['University Name']}</div>
-                    </div>
-                    <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
-                        {row['Speciality']}
-                    </div>
-                    <div class="prime-tags">{prime_tags_html}</div>
-                    <div class="info-container">
-                        <div>
-                            <div class="info-row">
-                                <span>Location:</span>
-                                <span>{row['City']}, {row['Country']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Tuition:</span>
-                                <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Application Fee:</span>
-                                <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Duration:</span>
-                                <span>{row['Duration']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Program Level:</span>
-                                <span>{row['Level']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Field:</span>
-                                <span>{row['Field']}</span>
+                # Place each card in the respective column
+                with cols[j]:
+                    st.markdown(f'''
+                    <div class="university-card">
+                        <div class="university-header">
+                            <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
+                            <div class="university-name" style="font-size: 1.2rem;">{row['University Name']}</div>
+                        </div>
+                        <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
+                            {row['Speciality']}
+                        </div>
+                        <div class="prime-tags">{prime_tags_html}</div>
+                        <div class="info-container">
+                            <div>
+                                <div class="info-row">
+                                    <span>Location:</span>
+                                    <span>{row['City']}, {row['Country']}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Tuition:</span>
+                                    <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Application Fee:</span>
+                                    <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Duration:</span>
+                                    <span>{row['Duration']}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Program Level:</span>
+                                    <span>{row['Level']}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span>Field:</span>
+                                    <span>{row['Field']}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                ''', unsafe_allow_html=True)
+                    ''', unsafe_allow_html=True)
     
     # Pagination controls
     col1, col2, col3 = st.columns([1, 2, 1])
