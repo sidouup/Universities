@@ -265,41 +265,54 @@ def main():
     end_idx = start_idx + items_per_page
 
     # Display universities in a grid of 4 columns per row
-for i in range(0, min(items_per_page, len(df) - start_idx), 4):
-    cols = st.columns(4)
+for i in range(0, min(items_per_page, len(filtered_df) - start_idx), 4):
+    cols = st.columns(4)  # Create a grid layout with four columns
     for j in range(4):
-        if i + j < len(df[start_idx:end_idx]):
-            row = df.iloc[start_idx + i + j]
-            with cols[j]:
-                st.markdown(f'''
-                <div class="university-card">
-                    <div class="university-header">
-                        <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
-                        <div class="university-name" style="font-size: 1.2rem;">{row.get('University Name', 'N/A')}</div>
-                    </div>
-                    <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
-                        {row.get('Speciality', 'N/A')}
-                    </div>
-                    <div class="info-container">
+        if i + j < len(filtered_df[start_idx:end_idx]):
+            row = filtered_df.iloc[start_idx + i + j]
+            prime_tags = [row[f'prime {k}'] for k in range(2, 6) if pd.notna(row[f'prime {k}'])]
+            prime_tags_html = ''.join([f'<span class="prime-tag">{tag}</span>' for tag in prime_tags])
+
+            st.markdown(f'''
+            <div class="university-card">
+                <div class="university-header">
+                    <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
+                    <div class="university-name" style="font-size: 1.2rem;">{row['University Name']}</div>
+                </div>
+                <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
+                    {row['Speciality']}
+                </div>
+                <div class="prime-tags">{prime_tags_html}</div>
+                <div class="info-container">
+                    <div>
                         <div class="info-row">
                             <span>Location:</span>
-                            <span>{row.get('City', 'N/A')}, {row.get('Country', 'N/A')}</span>
+                            <span>{row['City']}, {row['Country']}</span>
                         </div>
                         <div class="info-row">
                             <span>Tuition:</span>
-                            <span>${row.get('Tuition Price', 'N/A'):,.0f} {row.get('Tuition Currency', '')} / Year</span>
+                            <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
                         </div>
                         <div class="info-row">
                             <span>Application Fee:</span>
-                            <span>${row.get('Application Fee Price', 'N/A'):,.0f} {row.get('Application Fee Currency', '')}</span>
+                            <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
+                        </div>
+                        <div class="info-row">
+                            <span>Duration:</span>
+                            <span>{row['Duration']}</span>
                         </div>
                         <div class="info-row">
                             <span>Program Level:</span>
-                            <span>{row.get('Level', 'N/A')}</span>
+                            <span>{row['Level']}</span>
+                        </div>
+                        <div class="info-row">
+                            <span>Field:</span>
+                            <span>{row['Field']}</span>
                         </div>
                     </div>
                 </div>
-                ''', unsafe_allow_html=True)
+            </div>
+            ''', unsafe_allow_html=True)
 
     # Pagination controls
     col1, col2, col3 = st.columns([1, 2, 1])
