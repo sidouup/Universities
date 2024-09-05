@@ -16,24 +16,46 @@ def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
 
-# Function to load all sheets from Google Sheets and merge into one DataFrame
+# Function to load data from Google Sheets and apply filters
 @st.cache_data
-def load_all_sheets(spreadsheet_id):
+def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
-    all_data = []
+    filtered_data = []
+
     for sheet in sheets:
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
-        all_data.append(df)
-    
-    # Combine all sheets into one DataFrame
-    combined_df = pd.concat(all_data, ignore_index=True)
-    
-    # Clean Tuition Price and Application Fee Price columns
-    combined_df['Tuition Price'] = pd.to_numeric(combined_df['Tuition Price'], errors='coerce')
-    combined_df['Application Fee Price'] = pd.to_numeric(combined_df['Application Fee Price'], errors='coerce')
-    
+        
+        # Convert numeric fields
+        df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce')
+        df['Application Fee Price'] = pd.to_numeric(df['Application Fee Price'], errors='coerce')
+
+        # Apply filters incrementally
+        if major_filter != 'All':
+            df = df[df['Major'] == major_filter]
+        if country_filter != 'All':
+            df = df[df['Country'] == country_filter]
+        if level_filter != 'All':
+            df = df[df['Level'] == level_filter]
+        if field_filter != 'All':
+            df = df[df['Field'] == field_filter]
+        if specialty_filter != 'All':
+            df = df[df['Spec'] == specialty_filter]
+        if institution_filter != 'All':
+            df = df[df['Institution Type'] == institution_filter]
+
+        df = df[(df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
+
+        filtered_data.append(df)
+
+    # Combine all filtered data
+    combined_df = pd.concat(filtered_data, ignore_index=True)
+
+    # Limit the number of rows to a maximum of 10,000
+    if len(combined_df) > 10000:
+        combined_df = combined_df.sample(n=10000, random_state=42)
+
     return combined_df
 
 def main():
@@ -97,7 +119,7 @@ def main():
     """, unsafe_allow_html=True)
 
     # Replace with your Google Sheet ID
-    SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
+    SPREADSHEET_ID = "1gCxnCOhQRHtVdVMSiLaReBRJbCUz1Wn6-KJRZshneuM"
 
     # Load data from all sheets
     df = load_all_sheets(SPREADSHEET_ID)
@@ -115,56 +137,64 @@ def main():
             'tuition_max': int(df['Tuition Price'].max())
         }
 
+    # Google Sheet ID
+    SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
+
+    # Initialize session state for filters
+    if 'filters' not in st.session_state:
+        st.session_state.filters = {
+            'major': 'All',
+            'country': 'All',
+            'program_level': 'All',
+            'field': 'All',
+            'specialty': 'All',
+            'institution_type': 'All',
+            'tuition_min': 0,
+            'tuition_max': 0
+        }
+
+    # Load filter options
+    major_options = ["All"]  # Load from dataset
+    country_options = ["All"]  # Load from dataset
+    level_options = ["All"]  # Load from dataset
+    field_options = ["All"]  # Load from dataset
+    specialty_options = ["All"]  # Load from dataset
+    institution_options = ["All"]  # Load from dataset
+
     # Filters
-    major_options = ["All"] + sorted(df['Major'].unique().tolist())
-    st.session_state.filters['major'] = st.selectbox("Search by Major", major_options)
-
-    country_options = ["All"] + sorted(df['Country'].unique().tolist())
+    st.session_state.filters['major'] = st.selectbox("Major", major_options)
     st.session_state.filters['country'] = st.selectbox("Country", country_options)
-
-    level_options = ["All"] + sorted(df['Level'].unique().tolist())
     st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options)
-
-    field_options = ["All"] + sorted(df['Field'].unique().tolist())
     st.session_state.filters['field'] = st.selectbox("Field", field_options)
-
-    specialty_options = ["All"] + sorted(df['Spec'].unique().tolist())
     st.session_state.filters['specialty'] = st.selectbox("Specialty", specialty_options)
-
-    institution_options = ["All"] + sorted(df['Institution Type'].unique().tolist())
     st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
 
+    # Tuition Range Filter
     st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
         "Tuition Fee Range (CAD)",
-        min_value=int(df['Tuition Price'].min()),
-        max_value=int(df['Tuition Price'].max()),
+        min_value=0,
+        max_value=100000,  # Adjust max value based on your data
         value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
     )
 
-    # Filter the data based on selected filters
-    filtered_df = df.copy()
-    if st.session_state.filters['major'] != "All":
-        filtered_df = filtered_df[filtered_df['Major'] == st.session_state.filters['major']]
-    if st.session_state.filters['country'] != "All":
-        filtered_df = filtered_df[filtered_df['Country'] == st.session_state.filters['country']]
-    if st.session_state.filters['program_level'] != "All":
-        filtered_df = filtered_df[filtered_df['Level'] == st.session_state.filters['program_level']]
-    if st.session_state.filters['field'] != "All":
-        filtered_df = filtered_df[filtered_df['Field'] == st.session_state.filters['field']]
-    if st.session_state.filters['specialty'] != "All":
-        filtered_df = filtered_df[filtered_df['Spec'] == st.session_state.filters['specialty']]
-    if st.session_state.filters['institution_type'] != "All":
-        filtered_df = filtered_df[filtered_df['Institution Type'] == st.session_state.filters['institution_type']]
-    filtered_df = filtered_df[
-        (filtered_df['Tuition Price'] >= st.session_state.filters['tuition_min']) &
-        (filtered_df['Tuition Price'] <= st.session_state.filters['tuition_max'])
-    ]
+    # Load filtered data with a limit of 10,000 rows
+    df = load_filtered_data(
+        SPREADSHEET_ID,
+        st.session_state.filters['major'],
+        st.session_state.filters['country'],
+        st.session_state.filters['program_level'],
+        st.session_state.filters['field'],
+        st.session_state.filters['specialty'],
+        st.session_state.filters['institution_type'],
+        st.session_state.filters['tuition_min'],
+        st.session_state.filters['tuition_max']
+    )
 
-    # Display results using pagination
-    st.subheader(f"Showing {len(filtered_df)} results")
+    st.subheader(f"Showing {len(df)} results (Max 10,000 rows)")
 
-    items_per_page = 16  # Adjust pagination
-    total_pages = math.ceil(len(filtered_df) / items_per_page)
+    # Display results with pagination
+    items_per_page = 16
+    total_pages = math.ceil(len(df) / items_per_page)
 
     if 'current_page' not in st.session_state:
         st.session_state.current_page = 1
@@ -172,11 +202,11 @@ def main():
     start_idx = (st.session_state.current_page - 1) * items_per_page
     end_idx = start_idx + items_per_page
 
-    for i in range(0, min(items_per_page, len(filtered_df) - start_idx), 4):
+    for i in range(0, min(items_per_page, len(df) - start_idx), 4):
         cols = st.columns(4)
         for j in range(4):
-            if i + j < len(filtered_df[start_idx:end_idx]):
-                row = filtered_df.iloc[start_idx + i + j]
+            if i + j < len(df[start_idx:end_idx]):
+                row = df.iloc[start_idx + i + j]
                 with cols[j]:
                     st.markdown(f'''
                     <div class="university-card">
