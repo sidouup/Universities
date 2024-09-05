@@ -121,25 +121,6 @@ def main():
     # Replace with your Google Sheet ID
     SPREADSHEET_ID = "1gCxnCOhQRHtVdVMSiLaReBRJbCUz1Wn6-KJRZshneuM"
 
-    # Load data from all sheets
-    df = load_all_sheets(SPREADSHEET_ID)
-
-    # Initialize session state for filters
-    if 'filters' not in st.session_state:
-        st.session_state.filters = {
-            'major': 'All',
-            'country': 'All',
-            'program_level': 'All',
-            'field': 'All',
-            'specialty': 'All',
-            'institution_type': 'All',
-            'tuition_min': int(df['Tuition Price'].min()),
-            'tuition_max': int(df['Tuition Price'].max())
-        }
-
-    # Google Sheet ID
-    SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
-
     # Initialize session state for filters
     if 'filters' not in st.session_state:
         st.session_state.filters = {
@@ -150,10 +131,10 @@ def main():
             'specialty': 'All',
             'institution_type': 'All',
             'tuition_min': 0,
-            'tuition_max': 0
+            'tuition_max': 100000  # Default range for tuition
         }
 
-    # Load filter options
+    # Load filter options (Assume preloaded lists from the dataset)
     major_options = ["All"]  # Load from dataset
     country_options = ["All"]  # Load from dataset
     level_options = ["All"]  # Load from dataset
@@ -248,3 +229,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
