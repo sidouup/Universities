@@ -30,7 +30,7 @@ def main():
     st.set_page_config(layout="wide", page_title="University Search Tool - Multiple Sheets")
     
     # Google Sheet ID (replace with your actual ID)
-    SPREADSHEET_ID = "1gCxnCOhQRHtVdVMSiLaReBRJbCUz1Wn6-KJRZshneuM"
+    SPREADSHEET_ID = "1IB9S0trLKXKc34VEZjhr08CFbz37cgNcLSivnrXAGVs"
     
     # Get available sheets
     client = get_google_sheet_client()
