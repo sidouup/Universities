@@ -265,39 +265,41 @@ def main():
     end_idx = start_idx + items_per_page
 
     # Display universities in a grid of 4 columns per row
-    for i in range(0, min(items_per_page, len(df) - start_idx), 4):
-        cols = st.columns(4)
-        for j in range(4):
-            if i + j < len(df[start_idx:end_idx]):
-                row = df.iloc[start_idx + i + j]
-                with cols[j]:
-                    st.markdown(f'''
-                    <div class="university-card">
-                        <div class="university-header">
-                            <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
-                            <div class="university-name">{row.get('University Name', 'N/A')}</div>
+for i in range(0, min(items_per_page, len(df) - start_idx), 4):
+    cols = st.columns(4)
+    for j in range(4):
+        if i + j < len(df[start_idx:end_idx]):
+            row = df.iloc[start_idx + i + j]
+            with cols[j]:
+                st.markdown(f'''
+                <div class="university-card">
+                    <div class="university-header">
+                        <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
+                        <div class="university-name" style="font-size: 1.2rem;">{row.get('University Name', 'N/A')}</div>
+                    </div>
+                    <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
+                        {row.get('Speciality', 'N/A')}
+                    </div>
+                    <div class="info-container">
+                        <div class="info-row">
+                            <span>Location:</span>
+                            <span>{row.get('City', 'N/A')}, {row.get('Country', 'N/A')}</span>
                         </div>
-                        <div class="speciality-name">{row.get('Spec', 'N/A')}</div>
-                        <div class="info-container">
-                            <div class="info-row">
-                                <span>Location:</span>
-                                <span>{row.get('City', 'N/A')}, {row.get('Country', 'N/A')}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Tuition:</span>
-                                <span>${row.get('Tuition Price', 'N/A'):,.0f} {row.get('Tuition Currency', '')}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Application Fee:</span>
-                                <span>${row.get('Application Fee Price', 'N/A'):,.0f} {row.get('Application Fee Currency', '')}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Program Level:</span>
-                                <span>{row.get('Level', 'N/A')}</span>
-                            </div>
+                        <div class="info-row">
+                            <span>Tuition:</span>
+                            <span>${row.get('Tuition Price', 'N/A'):,.0f} {row.get('Tuition Currency', '')} / Year</span>
+                        </div>
+                        <div class="info-row">
+                            <span>Application Fee:</span>
+                            <span>${row.get('Application Fee Price', 'N/A'):,.0f} {row.get('Application Fee Currency', '')}</span>
+                        </div>
+                        <div class="info-row">
+                            <span>Program Level:</span>
+                            <span>{row.get('Level', 'N/A')}</span>
                         </div>
                     </div>
-                    ''', unsafe_allow_html=True)
+                </div>
+                ''', unsafe_allow_html=True)
 
     # Pagination controls
     col1, col2, col3 = st.columns([1, 2, 1])
