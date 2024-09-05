@@ -265,11 +265,12 @@ def main():
     end_idx = start_idx + items_per_page
 
     # Display universities in a grid of 4 columns per row
-    for i in range(0, min(items_per_page, len(filtered_df) - start_idx), 4):
+# Display universities in a grid of 4 columns per row
+    for i in range(0, min(items_per_page, len(df) - start_idx), 4):
         cols = st.columns(4)  # Create a grid layout with four columns
         for j in range(4):
-            if i + j < len(filtered_df[start_idx:end_idx]):
-                row = filtered_df.iloc[start_idx + i + j]
+            if i + j < len(df[start_idx:end_idx]):
+                row = df.iloc[start_idx + i + j]
                 prime_tags = [row[f'prime {k}'] for k in range(2, 6) if pd.notna(row[f'prime {k}'])]
                 prime_tags_html = ''.join([f'<span class="prime-tag">{tag}</span>' for tag in prime_tags])
     
@@ -314,20 +315,20 @@ def main():
                 </div>
                 ''', unsafe_allow_html=True)
     
-        # Pagination controls
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col1:
-            if st.session_state.current_page > 1:
-                if st.button("◀ Previous"):
-                    st.session_state.current_page -= 1
-                    st.rerun()
-        with col2:
-            st.markdown(f'<div class="page-info">Page {st.session_state.current_page} of {total_pages}</div>', unsafe_allow_html=True)
-        with col3:
-            if st.session_state.current_page < total_pages:
-                if st.button("Next ▶"):
-                    st.session_state.current_page += 1
-                    st.rerun()
+    # Pagination controls
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col1:
+        if st.session_state.current_page > 1:
+            if st.button("◀ Previous"):
+                st.session_state.current_page -= 1
+                st.rerun()
+    with col2:
+        st.markdown(f'<div class="page-info">Page {st.session_state.current_page} of {total_pages}</div>', unsafe_allow_html=True)
+    with col3:
+        if st.session_state.current_page < total_pages:
+            if st.button("Next ▶"):
+                st.session_state.current_page += 1
+                st.rerun()
 
 if __name__ == "__main__":
     main()
