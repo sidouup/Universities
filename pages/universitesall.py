@@ -30,7 +30,7 @@ def main():
     st.set_page_config(layout="wide", page_title="University Search Tool - Multiple Sheets")
     
     # Google Sheet ID (replace with your actual ID)
-    SPREADSHEET_ID = "1IB9S0trLKXKc34VEZjhr08CFbz37cgNcLSivnrXAGVs"
+    SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
     
     # Get available sheets
     client = get_google_sheet_client()
@@ -44,7 +44,6 @@ def main():
     df = load_data(SPREADSHEET_ID, selected_sheet)
 
     # Handle data formatting (adjust column names as needed for each sheet)
-    # Let's assume these columns are standard and available in each sheet
     if 'Tuition Price' in df.columns:
         df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce')
     if 'Application Fee Price' in df.columns:
@@ -53,18 +52,22 @@ def main():
     # Filters and session state management (same logic as previous)
     if 'filters' not in st.session_state:
         st.session_state.filters = {
-            'major': 'All',
-            'country': 'All',
-            'program_level': 'All',
             'field': 'All',
             'specialty': 'All',
-            'institution_type': 'All',
             'tuition_min': int(df['Tuition Price'].min()) if 'Tuition Price' in df.columns else 0,
             'tuition_max': int(df['Tuition Price'].max()) if 'Tuition Price' in df.columns else 0,
-            'french_only': False
         }
 
-    # Apply filters as before (adjust for each sheet)
+    # Field and Specialty Filters
+    if 'Field' in df.columns:
+        fields = ['All'] + sorted(df['Field'].unique())
+        st.session_state.filters['field'] = st.selectbox("Select Field", options=fields, key='field_filter')
+
+    if 'Spec' in df.columns:
+        specialties = ['All'] + sorted(df['Spec'].unique())
+        st.session_state.filters['specialty'] = st.selectbox("Select Specialty", options=specialties, key='spec_filter')
+
+    # Tuition Filter
     if 'Tuition Price' in df.columns:
         st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
             "Tuition fee range (CAD)",
@@ -74,9 +77,18 @@ def main():
             key='tuition_filter'
         )
 
-    # Apply all other filters as needed, similar to the original code
-    
-    # Display results using similar pagination and card layout
+    # Apply filters
+    if st.session_state.filters['field'] != 'All':
+        df = df[df['Field'] == st.session_state.filters['field']]
+
+    if st.session_state.filters['specialty'] != 'All':
+        df = df[df['Spec'] == st.session_state.filters['specialty']]
+
+    if 'Tuition Price' in df.columns:
+        df = df[(df['Tuition Price'] >= st.session_state.filters['tuition_min']) &
+                (df['Tuition Price'] <= st.session_state.filters['tuition_max'])]
+
+    # Display results using pagination
     st.subheader(f"Showing {len(df)} results from {selected_sheet}")
     
     items_per_page = 16  # Adjust pagination
@@ -88,7 +100,7 @@ def main():
     start_idx = (st.session_state.current_page - 1) * items_per_page
     end_idx = start_idx + items_per_page
 
-    # Display university cards (same logic as before)
+    # Display university cards
     for i in range(0, min(items_per_page, len(df) - start_idx), 4):
         cols = st.columns(4)  # Create a grid layout with four columns
         for j in range(4):
@@ -100,7 +112,7 @@ def main():
                         <div class="university-header">
                             <div class="university-name">{row.get('University Name', 'N/A')}</div>
                         </div>
-                        <div class="speciality-name">{row.get('Speciality', 'N/A')}</div>
+                        <div class="speciality-name">{row.get('Spec', 'N/A')}</div>
                         <div class="info-container">
                             <div class="info-row">
                                 <span>Location:</span>
