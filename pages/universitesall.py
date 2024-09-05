@@ -76,31 +76,13 @@ def main():
         background-color: #ffffff;
     }
     
-    .sidebar .sidebar-content {
-        background-color: #f8f9fa;
-        padding: 10px;
-    }
-    
-    [data-testid="stSidebar"] {
-        min-width: 200px !important;
-        max-width: 200px !important;
-    }
-    
-    .stSelectbox, .stMultiSelect, .stSlider {
-        background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-        padding: 5px;
-        margin-bottom: 10px;
-    }
-    
     .university-card {
         background: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
         padding: 15px;
         margin-bottom: 20px;
-        min-height: 500px;  /* Fixed height for consistent card size */
+        min-height: 500px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -111,135 +93,52 @@ def main():
     .university-card:hover {
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
-    
+
     .university-header {
         display: flex;
         align-items: center;
         margin-bottom: 15px;
     }
-    
+
     .university-logo {
         width: 50px;
         height: 50px;
         margin-right: 10px;
         object-fit: contain;
     }
-    
+
     .university-name {
         font-size: 1.2rem;
         font-weight: bold;
         color: #333333;
-        flex-grow: 1;
         text-align: center;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2; /* Limit to two lines */
-        -webkit-box-orient: vertical;
     }
-    
+
     .speciality-name {
         font-size: 1rem;
         margin-bottom: 15px;
         color: #555555;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2; /* Limit to two lines */
-        -webkit-box-orient: vertical;
         text-align: center;
-        text-decoration: underline;  /* Underline specialty names */
     }
-    
-    .info-container {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        font-size: 0.9rem;
-    }
-    
+
     .info-row {
         display: flex;
         justify-content: space-between;
         margin-bottom: 5px;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: #666666;
     }
-    
+
     .info-row span:first-child {
-        font-weight: bold; /* Make labels bold */
+        font-weight: bold;
     }
-    
-    .create-application-btn {
-        background-color: #1e88e5;
-        color: white !important;  /* Force text color to white */
-        font-weight: bold !important;  /* Force text to bold */
-        padding: 10px 15px;
-        border-radius: 5px;
-        text-align: center;
-        text-decoration: none;
-        display: block;
-        font-size: 1rem;
-        margin-top: 10px;
-        transition: background-color 0.3s ease;
-    }
-    
-    .create-application-btn:hover {
-        background-color: #1565c0;
-    }
-    
-    .prime-tags {
-        margin-bottom: 10px;
-        display: flex;
-        flex-wrap: nowrap; /* Prevent wrapping */
-        justify-content: center;
-        height: 25px; /* Adjust height for consistency */
-        align-items: center; /* Vertically align tags */
-        overflow: hidden; /* Hide overflow if too many tags */
-    }
-    
-    .prime-tag {
-        background-color: #ffd700;
-        color: #333333;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 0.65rem; /* Smaller size for fitting more tags */
-        margin-right: 2px;
-        display: inline-block;
-    }
-    
-    .stButton > button {
-        background-color: #1e88e5;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 5px 10px;
-        font-size: 1rem;
-        transition: background-color 0.3s ease;
-    }
-    
-    .stButton > button:hover {
-        background-color: #1565c0;
-    }
-    
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 20px;
-    }
-    
+
     .page-info {
         margin: 0 10px;
         font-size: 1rem;
-    }
-    
-    h1, h2, h3 {
         text-align: center;
-        font-weight: bold;
-        text-decoration: underline;
     }
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -258,30 +157,6 @@ def main():
             'tuition_min': 0,
             'tuition_max': 100000  # Default range for tuition
         }
-
-    # Load filter options (Assume preloaded lists from the dataset)
-    major_options = ["All"]  # Load from dataset
-    country_options = ["All"]  # Load from dataset
-    level_options = ["All"]  # Load from dataset
-    field_options = ["All"]  # Load from dataset
-    specialty_options = ["All"]  # Load from dataset
-    institution_options = ["All"]  # Load from dataset
-
-    # Filters
-    st.session_state.filters['major'] = st.selectbox("Major", major_options)
-    st.session_state.filters['country'] = st.selectbox("Country", country_options)
-    st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options)
-    st.session_state.filters['field'] = st.selectbox("Field", field_options)
-    st.session_state.filters['specialty'] = st.selectbox("Specialty", specialty_options)
-    st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
-
-    # Tuition Range Filter
-    st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
-        "Tuition Fee Range (CAD)",
-        min_value=0,
-        max_value=100000,  # Adjust max value based on your data
-        value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
-    )
 
     # Load filtered data with a limit of 10,000 rows
     df = load_filtered_data(
@@ -317,6 +192,7 @@ def main():
                     st.markdown(f'''
                     <div class="university-card">
                         <div class="university-header">
+                            <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
                             <div class="university-name">{row.get('University Name', 'N/A')}</div>
                         </div>
                         <div class="speciality-name">{row.get('Spec', 'N/A')}</div>
@@ -354,4 +230,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
