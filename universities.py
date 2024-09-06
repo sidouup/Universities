@@ -309,40 +309,37 @@ def main():
                 row = filtered_data.iloc[start_idx + i + j]
                 with cols[j]:
                     st.markdown(f'''
-                        <div class="university-card">
-                            <div class="university-header">
-                                <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
-                                <div class="university-name">{row['University Name']}</div>
+                    <div class="university-card">
+                        <div class="university-header">
+                            <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
+                            <div class="university-name">{row['University Name']}</div>
+                        </div>
+                        <div class="speciality-container">
+                            <div class="speciality-name" data-full-text="{row['Speciality']}">🎯 {row['Speciality']}</div>
+                        </div>
+                        <div class="info-container">
+                            <div class="info-row">
+                                <span><span class="emoji-icon">📍</span>Location:</span>
+                                <span>{row['City']}, {row['Country']}</span>
                             </div>
-                            <div class="speciality-container">
-                                <div class="speciality-name" data-full-text="{row['Speciality']}">🎯 {row['Speciality']}</div>
+                            <div class="info-row">
+                                <span><span class="emoji-icon">💰</span>Tuition:</span>
+                                <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
                             </div>
-                            <div class="info-container">
-                                <div class="info-row">
-                                    <span><span class="emoji-icon">📍</span>Location:</span>
-                                    <span>{row['City']}, {row['Country']}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span><span class="emoji-icon">💰</span>Tuition:</span>
-                                    <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
-                                </div>
-                                
-                                <div class="info-row">
-                                    <span><span class="emoji-icon">📝</span>Application Fee:</span>
-                                    <span>${(row['Application Fee Price'] + (70 if row['Application Fee Price'] == 0 else 40)):,.0f} {row['Application Fee Currency']}</span>
-                                </div>
-                                
-                                <div class="info-row">
-                                    <span><span class="emoji-icon">⏳</span>Duration:</span>
-                                    <span>{row['Duration']}</span>
-                                </div>
-                                <!-- Updated Level row with hover feature for long texts -->
-                                <div class="info-row level-container">
-                                    <span><span class="emoji-icon">🎓</span>
-                                    <span class="level-name" data-full-text="{row['Level']}">{row['Level']}</span></span>
-                                </div>
+                            <div class="info-row">
+                                <span><span class="emoji-icon">📝</span>Application Fee:</span>
+                                <span>${(row['Application Fee Price'] + (70 if row['Application Fee Price'] == 0 else 50)):,.0f} {row['Application Fee Currency']}</span>
+                            </div>
+                            <div class="info-row">
+                                <span><span class="emoji-icon">⏳</span>Duration:</span>
+                                <span>{row['Duration']}</span>
+                            </div>
+                            <div class="info-row">
+                                <span><span class="emoji-icon">🎓</span>Level:</span>
+                                <span>{row['Level']}</span>
                             </div>
                         </div>
+                    </div>
                     ''', unsafe_allow_html=True)
     # Pagination controls
     col1, col2, col3 = st.columns([1, 2, 1])
