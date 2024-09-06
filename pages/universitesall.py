@@ -215,29 +215,50 @@ def main():
             'tuition_max': 100000  # Default range for tuition
         }
 
-    # Load filter options (Replace these with dynamic options from the dataset)
-    major_options = ["All", "Engineering", "Business", "Arts"]  # Example options
-    country_options = ["All", "USA", "Canada", "UK"]
-    level_options = ["All", "Bachelor's", "Master's", "PhD"]
-    field_options = ["All", "Engineering and Technology", "Health Sciences", "Arts and Humanities"]
-    specialty_options = ["All", "Computer Science", "Business Administration", "Graphic Design"]
-    institution_options = ["All", "University", "College", "Institute"]
+    # Extract filter options dynamically from the dataframe
+    major_options = ['All'] + sorted(df['Major'].dropna().unique().tolist())
+    country_options = ['All'] + sorted(df['Country'].dropna().unique().tolist())
+    level_options = ['All'] + sorted(df['Level'].dropna().unique().tolist())
+    field_options = ['All'] + sorted(df['Field'].dropna().unique().tolist())
+    specialty_options = ['All'] + sorted(df['Spec'].dropna().unique().tolist())
+    institution_options = ['All'] + sorted(df['Institution Type'].dropna().unique().tolist())
 
-    # Filters
-    st.session_state.filters['major'] = st.selectbox("Major", major_options)
-    st.session_state.filters['country'] = st.selectbox("Country", country_options)
-    st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options)
-    st.session_state.filters['field'] = st.selectbox("Field", field_options)
-    st.session_state.filters['specialty'] = st.selectbox("Specialty", specialty_options)
-    st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
+    with st.form("filter_form"):
+        st.subheader("Filter Options")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.session_state.filters['major'] = st.selectbox("Major", major_options)
+            st.session_state.filters['country'] = st.selectbox("Country", country_options)
+        with col2:
+            st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options)
+            st.session_state.filters['field'] = st.selectbox("Field", field_options)
+        with col3:
+            st.session_state.filters['specialty'] = st.selectbox("Specialty", specialty_options)
+            st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
+        
+        # Tuition slider across all columns
+        st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
+            "Tuition Fee Range (CAD)",
+            min_value=int(df['Tuition Price'].min()),
+            max_value=int(df['Tuition Price'].max()),
+            value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
+        )
+    if submit_button:
+        df_filtered = load_filtered_data(
+            SPREADSHEET_ID,
+            st.session_state.filters['major'],
+            st.session_state.filters['country'],
+            st.session_state.filters['program_level'],
+            st.session_state.filters['field'],
+            st.session_state.filters['specialty'],
+            st.session_state.filters['institution_type'],
+            st.session_state.filters['tuition_min'],
+            st.session_state.filters['tuition_max']
+        )
+        st.success(f"Showing {len(df_filtered)} results (Max 10,000 rows)")
 
-    # Tuition Range Filter
-    st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
-        "Tuition Fee Range (CAD)",
-        min_value=0,
-        max_value=100000,  # Adjust max value based on your data
-        value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
-    )
+
+
 
     # Load filtered data with a limit of 10,000 rows
     df = load_filtered_data(
