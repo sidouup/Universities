@@ -1,24 +1,3 @@
-
-import streamlit as st
-import gspread
-import pandas as pd
-from google.oauth2.service_account import Credentials
-import math
-
-# Use your service account info from Streamlit secrets
-SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
-
-# Define the scopes
-SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
-
-# Authenticate and build the Google Sheets service
-@st.cache_resource
-def get_google_sheet_client():
-    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
-    return gspread.authorize(creds)
-
-# Function to load data from Google Sheets and apply filters
-@st.cache_data
 def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
@@ -27,12 +6,12 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
     for sheet in sheets:
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
-        
+
         # Convert numeric fields
         df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce')
         df['Application Fee Price'] = pd.to_numeric(df['Application Fee Price'], errors='coerce')
 
-        # Apply filters incrementally
+        # Apply filters incrementally on all data
         if major_filter != 'All':
             df = df[df['Major'] == major_filter]
         if country_filter != 'All':
@@ -52,18 +31,12 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
 
     # Combine all filtered data
     combined_df = pd.concat(filtered_data, ignore_index=True)
-
-    # Limit the number of rows to a maximum of 10,000
-    if len(combined_df) > 10000:
-        combined_df = combined_df.sample(n=10000, random_state=42)
-
     return combined_df
-
 
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
     
-    # Custom CSS for modern styling
+    # Custom CSS to make the card more compact
     st.markdown("""
     <style>
     body {
@@ -71,21 +44,13 @@ def main():
         background-color: #f9f9f9;
         color: #333333;
     }
-
     .stApp {
         background-color: #ffffff;
     }
-
     .sidebar .sidebar-content {
         background-color: #f8f9fa;
         padding: 15px;
     }
-
-    [data-testid="stSidebar"] {
-        min-width: 250px !important;
-        max-width: 250px !important;
-    }
-
     .stSelectbox, .stMultiSelect, .stSlider {
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
@@ -93,40 +58,35 @@ def main():
         padding: 8px;
         margin-bottom: 15px;
     }
-
     .university-card {
         background: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 15px;
-        padding: 20px;
+        padding: 10px;  /* Reduced padding */
         margin-bottom: 20px;
-        min-height: 550px;
+        min-height: 400px;  /* Reduced height */
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         transition: all 0.3s ease;
         box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
-
     .university-card:hover {
         box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
-
     .university-header {
         display: flex;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 5px;  /* Reduced margin */
     }
-
     .university-logo {
-        width: 60px;
-        height: 60px;
-        margin-right: 15px;
+        width: 50px;
+        height: 50px;  /* Reduced size */
+        margin-right: 10px;
         object-fit: contain;
     }
-
     .university-name {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: bold;
         color: #333333;
         text-align: left;
@@ -136,47 +96,39 @@ def main():
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
     }
-
     .speciality-name {
         font-size: 1rem;
-        margin-bottom: 15px;
         color: #555555;
         text-align: left;
         text-decoration: underline;
     }
-
     .info-container {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        font-size: 0.95rem;
+        font-size: 0.9rem;  /* Reduced font size */
     }
-
     .info-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 8px;
+        margin-bottom: 5px;  /* Reduced margin */
         font-size: 0.9rem;
         color: #666666;
     }
-
     .info-row span:first-child {
         font-weight: bold;
     }
-
     .pagination {
         display: flex;
         justify-content: center;
         align-items: center;
         margin-top: 20px;
     }
-
     .page-info {
         margin: 0 10px;
         font-size: 1.1rem;
     }
-
     .stButton > button {
         background-color: #1e88e5;
         color: white;
@@ -186,11 +138,9 @@ def main():
         font-size: 1rem;
         transition: background-color 0.3s ease;
     }
-
     .stButton > button:hover {
         background-color: #1565c0;
     }
-
     h1, h2, h3 {
         text-align: center;
         font-weight: bold;
@@ -204,7 +154,7 @@ def main():
 
     # Load data to extract filter options dynamically
     client = get_google_sheet_client()
-    sheet = client.open_by_key(SPREADSHEET_ID).sheet1  # Load first sheet, you can adjust this
+    sheet = client.open_by_key(SPREADSHEET_ID).sheet1
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
 
@@ -227,10 +177,7 @@ def main():
             'tuition_max': 100000  # Default range for tuition
         }
 
-    # Initialize df_filtered with the entire dataset by default or an empty DataFrame
-    df_filtered = df.copy()
-
-    # Display filters in a more compact layout
+    # Display filters in a compact layout
     with st.form("filter_form"):
         st.subheader("Filter Options")
         col1, col2, col3 = st.columns(3)
@@ -252,7 +199,7 @@ def main():
         )
         submit_button = st.form_submit_button("Apply Filters")
 
-    # Load filtered data with a limit of 10,000 rows only if the button is pressed
+    # Load filtered data with a limit of 10,000 rows only for display, but apply the filters on the whole data
     if submit_button:
         df_filtered = load_filtered_data(
             SPREADSHEET_ID,
@@ -264,6 +211,11 @@ def main():
             st.session_state.filters['tuition_min'],
             st.session_state.filters['tuition_max']
         )
+
+        # Limit to 10,000 for display
+        if len(df_filtered) > 10000:
+            df_filtered = df_filtered.sample(n=10000, random_state=42)
+
         st.success(f"Showing {len(df_filtered)} results (Max 10,000 rows)")
 
     # Display results with pagination
@@ -287,11 +239,9 @@ def main():
                     <div class="university-card">
                         <div class="university-header">
                             <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
-                            <div class="university-name" style="font-size: 1.2rem;">{row['University Name']}</div>
+                            <div class="university-name">{row['University Name']}</div>
                         </div>
-                        <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
-                            {row['Speciality']}
-                        </div>
+                        <div class="speciality-name">{row['Speciality']}</div>
                         <div class="info-container">
                             <div class="info-row">
                                 <span>Location:</span>
@@ -326,4 +276,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
