@@ -325,7 +325,7 @@ def main():
                                 </div>
                                 <!-- Updated Level field to apply the class for single-line and ellipsis -->
                                 <div class="info-row">
-                                    <span><span class="emoji-icon"></span>Level:</span>
+                                    <span><span class="emoji-icon">🎓</span>Level:</span>
                                     <span class="level-name" data-full-text="{row['Level']}">{row['Level']}</span>
                                 </div>
                             </div>
