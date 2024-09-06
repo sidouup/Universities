@@ -242,7 +242,7 @@ def main():
     )
 
     # Pagination setup
-    items_per_page = 16
+    items_per_page = 24
     total_pages = math.ceil(len(filtered_data) / items_per_page)
 
     start_idx = (st.session_state.current_page - 1) * items_per_page
