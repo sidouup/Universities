@@ -277,36 +277,38 @@ def main():
     end_idx = start_idx + items_per_page
 
     # Display universities in a grid of 4 columns per row
-    for i in range(0, min(items_per_page, len(df_filtered) - start_idx), 4):
-        cols = st.columns(4)  # Create a grid layout with four columns
+    for i in range(0, len(df_filtered[start_idx:end_idx]), 4):  # Process 4 items at a time
+        cols = st.columns(4)  # Create 4 columns
         for j in range(4):
             if i + j < len(df_filtered[start_idx:end_idx]):
-                row = df_filtered.iloc[start_idx + i + j]
-                st.markdown(f'''
-                <div class="university-card">
-                    <div class="university-header">
-                        <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
-                        <div class="university-name" style="font-size: 1.2rem;">{row['University Name']}</div>
-                    </div>
-                    <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
-                        {row['Speciality']}
-                    </div>
-                    <div class="info-container">
-                        <div class="info-row">
-                            <span>Location:</span>
-                            <span>{row['City']}, {row['Country']}</span>
+                row = df_filtered.iloc[i + j]
+                with cols[j]:  # Assign each card to a column
+                    st.markdown(f'''
+                    <div class="university-card">
+                        <div class="university-header">
+                            <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
+                            <div class="university-name" style="font-size: 1.2rem;">{row['University Name']}</div>
                         </div>
-                        <div class="info-row">
-                            <span>Tuition:</span>
-                            <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
-                        <div class="info-row">
-                            <span>Application Fee:</span>
-                            <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
+                        <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
+                            {row['Speciality']}
+                        </div>
+                        <div class="info-container">
+                            <div class="info-row">
+                                <span>Location:</span>
+                                <span>{row['City']}, {row['Country']}</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Tuition:</span>
+                                <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Application Fee:</span>
+                                <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                ''', unsafe_allow_html=True)
-
+                    ''', unsafe_allow_html=True)
+    
     # Pagination controls
     col1, col2, col3 = st.columns([1, 2, 1])
     with col1:
