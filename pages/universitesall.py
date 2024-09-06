@@ -231,7 +231,7 @@ def main():
     # Load filtered data with a limit of 10,000 rows only for display, but apply the filters on the whole data
     if submit_button or search_query:
         df_filtered = load_filtered_data(
-            SP            READSHEET_ID,
+            SPREADSHEET_ID,
             st.session_state.filters['major'],
             st.session_state.filters['country'],
             st.session_state.filters['program_level'],
