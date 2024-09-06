@@ -273,20 +273,35 @@ def main():
                 row = filtered_data.iloc[start_idx + i + j]
                 with cols[j]:
                     st.markdown(f'''
-                        <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-                            <div style="display: flex; align-items: center;">
-                                <img src="{row['Picture']}" style="width: 50px; height: 50px; margin-right: 10px;" alt="{row['University Name']} logo">
-                                <div style="font-size: 18px; font-weight: bold;">{row['University Name']}</div>
+                    <div class="university-card">
+                        <div class="university-header">
+                            <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
+                            <div class="university-name">{row['University Name']}</div>
+                        </div>
+                        <div class="speciality-name">{row['Speciality']}</div>
+                        <div class="info-container">
+                            <div class="info-row">
+                                <span>Location:</span>
+                                <span>{row['City']}, {row['Country']}</span>
                             </div>
-                            <div class="specialty-name" data-full-text="{row['Speciality']}">{row['Speciality']}</div>
-                            <div style="margin-top: 10px;">
-                                <div><strong>Location:</strong> {row['City']}, {row['Country']}</div>
-                                <div><strong>Tuition:</strong> ${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</div>
-                                <div><strong>Application Fee:</strong> ${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</div>
-                                <div><strong>Duration:</strong> {row['Duration']}</div>
-                                <div><strong>Level:</strong> {row['Level']}</div>
+                            <div class="info-row">
+                                <span>Tuition:</span>
+                                <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Application Fee:</span>
+                                <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Duration:</span>
+                                <span>{row['Duration']}</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Level:</span>
+                                <span>{row['Level']}</span>
                             </div>
                         </div>
+                    </div>
                     ''', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
