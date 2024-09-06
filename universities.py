@@ -278,7 +278,7 @@ def main():
                             <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
                             <div class="university-name">{row['University Name']}</div>
                         </div>
-                        <div class="speciality-name">{row['Speciality']}</div>
+                        <div class="speciality-name" data-full-text="{row['Speciality']}">{row['Speciality']}</div>
                         <div class="info-container">
                             <div class="info-row">
                                 <span>Location:</span>
