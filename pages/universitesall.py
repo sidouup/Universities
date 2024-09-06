@@ -211,7 +211,7 @@ def main():
     country_options = ['All'] + sorted(df['Country'].dropna().unique().tolist())
     level_options = ['All'] + sorted(df['Level'].dropna().unique().tolist())
     field_options = ['All'] + sorted(df['Field'].dropna().unique().tolist())
-    specialty_options = ['All'] + sorted(df['Spec'].dropna().unique().tolist())
+
     institution_options = ['All'] + sorted(df['Institution Type'].dropna().unique().tolist())
 
     # Initialize session state for filters
@@ -221,7 +221,7 @@ def main():
             'country': 'All',
             'program_level': 'All',
             'field': 'All',
-            'specialty': 'All',
+
             'institution_type': 'All',
             'tuition_min': 0,
             'tuition_max': 100000  # Default range for tuition
@@ -238,7 +238,7 @@ def main():
             st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options)
             st.session_state.filters['field'] = st.selectbox("Field", field_options)
         with col3:
-            st.session_state.filters['specialty'] = st.selectbox("Specialty", specialty_options)
+
             st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
         
         # Tuition slider across all columns
@@ -258,7 +258,6 @@ def main():
             st.session_state.filters['country'],
             st.session_state.filters['program_level'],
             st.session_state.filters['field'],
-            st.session_state.filters['specialty'],
             st.session_state.filters['institution_type'],
             st.session_state.filters['tuition_min'],
             st.session_state.filters['tuition_max']
