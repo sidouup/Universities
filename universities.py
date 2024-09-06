@@ -205,6 +205,13 @@ def main():
     </style>
     """, unsafe_allow_html=True)
     
+    st.markdown("""
+<div style="text-align:center;">
+    <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=228,fit=crop,q=95/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" 
+    alt="Logo" style="width:50%; height:auto;">
+</div>
+""", unsafe_allow_html=True)
+
     st.title("🎓 University Search Tool")
 
     # Google Sheet ID
