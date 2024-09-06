@@ -17,7 +17,7 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
 
 # Function to load data from Google Sheets and apply filters
-def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max):
+def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max, search_query=""):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
     filtered_data = []
@@ -45,6 +45,11 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
             df = df[df['Institution Type'] == institution_filter]
 
         df = df[(df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
+
+        # Apply search filter if search_query is provided
+        if search_query:
+            df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
+                    df['Speciality'].str.contains(search_query, case=False, na=False)]
 
         filtered_data.append(df)
 
@@ -81,9 +86,9 @@ def main():
         background: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 15px;
-        padding: 10px;  
+        padding: 10px;  /* Reduced padding */
         margin-bottom: 20px;
-        min-height: 400px;  
+        min-height: 400px;  /* Reduced height */
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -96,11 +101,11 @@ def main():
     .university-header {
         display: flex;
         align-items: center;
-        margin-bottom: 5px; 
+        margin-bottom: 5px;  /* Reduced margin */
     }
     .university-logo {
         width: 50px;
-        height: 50px;  
+        height: 50px;  /* Reduced size */
         margin-right: 10px;
         object-fit: contain;
     }
@@ -126,12 +131,12 @@ def main():
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        font-size: 0.9rem;  
+        font-size: 0.9rem;  /* Reduced font size */
     }
     .info-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 5px;  
+        margin-bottom: 5px;  /* Reduced margin */
         font-size: 0.9rem;
         color: #666666;
     }
@@ -174,11 +179,12 @@ def main():
     # Load data to extract filter options dynamically
     client = get_google_sheet_client()
     sheets = client.open_by_key(SPREADSHEET_ID).worksheets()
-    df_list = []
+
+    # Merge all sheets into one dataframe
+    data = []
     for sheet in sheets:
-        data = sheet.get_all_records()
-        df_list.append(pd.DataFrame(data))
-    df = pd.concat(df_list)
+        data.extend(sheet.get_all_records())
+    df = pd.DataFrame(data)
 
     # Extract filter options dynamically from the dataframe
     major_options = ['All'] + sorted(df['Major'].dropna().unique().tolist())
@@ -196,8 +202,11 @@ def main():
             'field': 'All',
             'institution_type': 'All',
             'tuition_min': 0,
-            'tuition_max': 100000  
+            'tuition_max': 100000  # Default range for tuition
         }
+
+    # Add search bar for Speciality and University Name
+    search_query = st.text_input("Search by University Name or Speciality")
 
     # Display filters in a compact layout
     with st.form("filter_form"):
@@ -221,11 +230,8 @@ def main():
         )
         submit_button = st.form_submit_button("Apply Filters")
 
-    # Initialize df_filtered with the entire dataset
-    df_filtered = df.copy()
-
-    # Load filtered data only if the button is pressed
-    if submit_button:
+    # Load filtered data with a limit of 10,000 rows only for display, but apply the filters on the whole data
+    if submit_button or search_query:
         df_filtered = load_filtered_data(
             SPREADSHEET_ID,
             st.session_state.filters['major'],
@@ -234,12 +240,14 @@ def main():
             st.session_state.filters['field'],
             st.session_state.filters['institution_type'],
             st.session_state.filters['tuition_min'],
-            st.session_state.filters['tuition_max']
+            st.session_state.filters['tuition_max'],
+            search_query=search_query
         )
 
         # Limit to 10,000 for display
         if len(df_filtered) > 10000:
             df_filtered = df_filtered.sample(n=10000, random_state=42)
+
         st.success(f"Showing {len(df_filtered)} results (Max 10,000 rows)")
 
     # Display results with pagination
@@ -268,16 +276,16 @@ def main():
                         <div class="speciality-name">{row['Speciality']}</div>
                         <div class="info-container">
                             <div class="info-row">
-                                <span>Location:</span>
-                                <span>{row['City']}, {row['Country']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Duration:</span>
-                                <span>{row['Duration']}</span>
+                                <span>Campus:</span>
+                                <span>{row['City']}</span>
                             </div>
                             <div class="info-row">
                                 <span>Level:</span>
                                 <span>{row['Level']}</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Duration:</span>
+                                <span>{row['Duration']}</span>
                             </div>
                             <div class="info-row">
                                 <span>Tuition:</span>
@@ -308,3 +316,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
