@@ -155,6 +155,7 @@ def main():
     """, unsafe_allow_html=True)
 
     # Google Sheet ID
+    # Google Sheet ID
     SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
 
     # Load all data once
@@ -203,7 +204,26 @@ def main():
             max_value=int(all_data['Tuition Price'].max()),
             value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
         )
+        
         submit_button = st.form_submit_button("Apply Filters")
+
+    # Reset button outside the form
+    reset_button = st.button("Reset Filters")
+
+    # Handle reset button click
+    if reset_button:
+        st.session_state.filters = {
+            'major': 'All',
+            'country': 'All',
+            'program_level': 'All',
+            'field': 'All',
+            'institution_type': 'All',
+            'tuition_min': int(all_data['Tuition Price'].min()),
+            'tuition_max': int(all_data['Tuition Price'].max())
+        }
+        st.session_state.search_query = ""
+        st.session_state.current_page = 1
+        st.experimental_rerun()
 
     if submit_button or search_query != st.session_state.search_query:
         st.session_state.current_page = 1
@@ -285,5 +305,3 @@ def main():
                 st.rerun()
 if __name__ == "__main__":
     main()
-
-
