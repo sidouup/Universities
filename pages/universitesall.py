@@ -1,3 +1,25 @@
+
+import streamlit as st
+import gspread
+import pandas as pd
+from google.oauth2.service_account import Credentials
+import math
+
+# Use your service account info from Streamlit secrets
+SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
+
+# Define the scopes
+SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+
+# Authenticate and build the Google Sheets service
+@st.cache_resource
+def get_google_sheet_client():
+    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
+    return gspread.authorize(creds)
+
+# Function to load data from Google Sheets and apply filters
+
+
 def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
