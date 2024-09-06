@@ -337,9 +337,12 @@ def main():
                                     <span><span class="emoji-icon">⏳</span>Duration:</span>
                                     <span>{row['Duration']}</span>
                                 </div>
-                                <!-- Updated Level row with a single container for icon and text -->
+                                <!-- Updated Level row with fallback for missing data -->
                                 <div class="info-row level-container">
-                                    <span><span class="emoji-icon">🎓</span><span class="level-name" data-full-text="{row['Level']}">{row['Level']}</span></span>
+                                    <span><span class="emoji-icon">🎓</span>
+                                    <span class="level-name" data-full-text="{row['Level'] if row['Level'] else 'N/A'}">
+                                        {row['Level'] if row['Level'] else 'Level information not available'}
+                                    </span></span>
                                 </div>
                             </div>
                         </div>
