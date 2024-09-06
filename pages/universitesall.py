@@ -1,4 +1,3 @@
-
 import streamlit as st
 import gspread
 import pandas as pd
@@ -82,9 +81,9 @@ def main():
         background: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 15px;
-        padding: 10px;  /* Reduced padding */
+        padding: 10px;
         margin-bottom: 20px;
-        min-height: 400px;  /* Reduced height */
+        min-height: 400px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -97,11 +96,11 @@ def main():
     .university-header {
         display: flex;
         align-items: center;
-        margin-bottom: 5px;  /* Reduced margin */
+        margin-bottom: 5px;
     }
     .university-logo {
         width: 50px;
-        height: 50px;  /* Reduced size */
+        height: 50px;
         margin-right: 10px;
         object-fit: contain;
     }
@@ -127,12 +126,12 @@ def main():
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        font-size: 0.9rem;  /* Reduced font size */
+        font-size: 0.9rem;
     }
     .info-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 5px;  /* Reduced margin */
+        margin-bottom: 5px;
         font-size: 0.9rem;
         color: #666666;
     }
@@ -177,6 +176,9 @@ def main():
     sheet = client.open_by_key(SPREADSHEET_ID).sheet1
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
+
+    # Initialize df_filtered with the entire dataset by default
+    df_filtered = df.copy()
 
     # Extract filter options dynamically from the dataframe
     major_options = ['All'] + sorted(df['Major'].dropna().unique().tolist())
@@ -225,14 +227,14 @@ def main():
             SPREADSHEET_ID,
             st.session_state.filters['major'],
             st.session_state.filters['country'],
-            st.session_state.filters['program_level'],
+            st.session_state.filters['            program_level'],
             st.session_state.filters['field'],
             st.session_state.filters['institution_type'],
             st.session_state.filters['tuition_min'],
             st.session_state.filters['tuition_max']
         )
 
-        # Limit to 10,000 for display
+        # Limit to 10,000 for display only
         if len(df_filtered) > 10000:
             df_filtered = df_filtered.sample(n=10000, random_state=42)
 
@@ -296,3 +298,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
