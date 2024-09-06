@@ -223,7 +223,7 @@ def main():
         }
         st.session_state.search_query = ""
         st.session_state.current_page = 1
-        st.experimental_rerun()
+        st.rerun()
 
     if submit_button or search_query != st.session_state.search_query:
         st.session_state.current_page = 1
