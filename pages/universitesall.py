@@ -1,4 +1,3 @@
-
 import streamlit as st
 import gspread
 import pandas as pd
@@ -57,6 +56,7 @@ def apply_filters(df, major_filter, country_filter, level_filter, field_filter, 
                 df['Speciality'].str.contains(search_query, case=False, na=False)]
 
     return df
+
 
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
@@ -185,6 +185,7 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
+
     # Google Sheet ID
     SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
 
@@ -234,7 +235,27 @@ def main():
             max_value=int(all_data['Tuition Price'].max()),
             value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
         )
-        submit_button = st.form_submit_button("Apply Filters")
+        
+        col4, col5 = st.columns([1, 1])
+        with col4:
+            submit_button = st.form_submit_button("Apply Filters")
+        with col5:
+            reset_button = st.form_submit_button("Reset Filters")
+
+    # Handle reset button click
+    if reset_button:
+        st.session_state.filters = {
+            'major': 'All',
+            'country': 'All',
+            'program_level': 'All',
+            'field': 'All',
+            'institution_type': 'All',
+            'tuition_min': int(all_data['Tuition Price'].min()),
+            'tuition_max': int(all_data['Tuition Price'].max())
+        }
+        st.session_state.search_query = ""
+        st.session_state.current_page = 1
+        st.experimental_rerun()
 
     if submit_button or search_query != st.session_state.search_query:
         st.session_state.current_page = 1
@@ -253,7 +274,7 @@ def main():
     )
 
     # Pagination setup
-    items_per_page = 24
+    items_per_page = 16
     total_pages = math.ceil(len(filtered_data) / items_per_page)
 
     start_idx = (st.session_state.current_page - 1) * items_per_page
@@ -272,7 +293,9 @@ def main():
                             <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
                             <div class="university-name">{row['University Name']}</div>
                         </div>
-                        <div class="speciality-name">{row['Speciality']}</div>
+                        <div class="speciality-container">
+                            <div class="speciality-name" data-full-text="{row['Speciality']}">{row['Speciality']}</div>
+                        </div>
                         <div class="info-container">
                             <div class="info-row">
                                 <span>Location:</span>
@@ -298,6 +321,7 @@ def main():
                     </div>
                     ''', unsafe_allow_html=True)
 
+    # Pagination controls
     col1, col2, col3 = st.columns([1, 2, 1])
     with col1:
         if st.session_state.current_page > 1:
@@ -311,6 +335,8 @@ def main():
             if st.button("Next ▶"):
                 st.session_state.current_page += 1
                 st.rerun()
-
 if __name__ == "__main__":
     main()
+
+
+
