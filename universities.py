@@ -164,23 +164,24 @@ def main():
     align-items: center; /* Aligns icon and text in the same line */
 }
 .level-container span {
-    display: inline-block; /* Keep icon and text together */
+    display: inline-block;
     overflow: hidden;
-    white-space: nowrap; /* Prevent text wrapping */
-    text-overflow: ellipsis; /* Add ellipsis for overflow */
+    white-space: nowrap;
+    text-overflow: ellipsis; /* Ensure the text truncates with ellipsis */
+    max-width: calc(100% - 1rem); /* Adjust this based on your layout */
 }
 .level-name {
     font-size: 0.9rem;
     font-weight: bold;
     color: #555555;
     overflow: hidden;
-    white-space: nowrap; /* Prevent wrapping */
-    text-overflow: ellipsis; /* Add ellipsis if too long */
+    white-space: nowrap; /* Prevent text from wrapping */
+    text-overflow: ellipsis; /* Add ellipsis */
     cursor: pointer;
-    max-width: calc(100% - 1rem); /* Ensure the ellipsis works with the icon */
+    max-width: calc(100% - 1rem); /* Make sure ellipsis appears */
 }
 .level-name:hover::after {
-    content: attr(data-full-text);
+    content: attr(data-full-text); /* Shows the full content on hover */
     position: absolute;
     background: #ffffff;
     border: 1px solid #ddd;
@@ -189,7 +190,7 @@ def main():
     z-index: 1;
     white-space: normal;
     word-wrap: break-word;
-    max-width: 300px;
+    max-width: 300px; /* Adjust for tooltip size */
     top: 100%;
     left: 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
