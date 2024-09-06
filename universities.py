@@ -326,10 +326,12 @@ def main():
                                     <span><span class="emoji-icon">💰</span>Tuition:</span>
                                     <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
                                 </div>
+                                
                                 <div class="info-row">
                                     <span><span class="emoji-icon">📝</span>Application Fee:</span>
-                                    <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
+                                    <span>${(row['Application Fee Price'] + (70 if row['Application Fee Price'] == 0 else 40)):,.0f} {row['Application Fee Currency']}</span>
                                 </div>
+                                
                                 <div class="info-row">
                                     <span><span class="emoji-icon">⏳</span>Duration:</span>
                                     <span>{row['Duration']}</span>
