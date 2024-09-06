@@ -1,3 +1,63 @@
+import streamlit as st
+import gspread
+import pandas as pd
+from google.oauth2.service_account import Credentials
+import math
+
+# Use your service account info from Streamlit secrets
+SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
+
+# Define the scopes
+SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+
+# Authenticate and build the Google Sheets service
+@st.cache_resource
+def get_google_sheet_client():
+    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
+    return gspread.authorize(creds)
+
+# Function to load all data from Google Sheets
+@st.cache_data(ttl=3600)
+def load_all_data(spreadsheet_id):
+    client = get_google_sheet_client()
+    sheets = client.open_by_key(spreadsheet_id).worksheets()
+    all_data = []
+
+    for sheet in sheets:
+        data = sheet.get_all_records()
+        df = pd.DataFrame(data)
+        all_data.append(df)
+
+    # Combine all data
+    combined_df = pd.concat(all_data, ignore_index=True)
+    
+    # Ensure the 'Tuition Price' column is numeric
+    combined_df['Tuition Price'] = pd.to_numeric(combined_df['Tuition Price'], errors='coerce')
+    
+    return combined_df
+
+# Function to apply filters to the data
+def apply_filters(df, major_filter, country_filter, level_filter, field_filter, institution_filter, tuition_min, tuition_max, search_query):
+    if major_filter != 'All':
+        df = df[df['Major'] == major_filter]
+    if country_filter != 'All':
+        df = df[df['Country'] == country_filter]
+    if level_filter != 'All':
+        df = df[df['Level'] == level_filter]
+    if field_filter != 'All':
+        df = df[df['Field'] == field_filter]
+    if institution_filter != 'All':
+        df = df[df['Institution Type'] == institution_filter]
+
+    df = df[df['Tuition Price'].notna() & (df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
+
+    if search_query:
+        df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
+                df['Speciality'].str.contains(search_query, case=False, na=False)]
+
+    return df
+
+
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
 
@@ -257,3 +317,5 @@ def main():
             if st.button("Next ▶"):
                 st.session_state.current_page += 1
                 st.rerun()
+if __name__ == "__main__":
+    main()
