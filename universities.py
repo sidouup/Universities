@@ -323,10 +323,9 @@ def main():
                                     <span><span class="emoji-icon">⏳</span>Duration:</span>
                                     <span>{row['Duration']}</span>
                                 </div>
-                                <!-- Updated Level field to apply the class for single-line and ellipsis -->
-                                <div class="info-row">
-                                    <span><span class="emoji-icon">🎓</span>Level:</span>
-                                    <span class="level-name" data-full-text="{row['Level']}">{row['Level']}</span>
+                                <!-- Updated Level row with a single container for icon and text -->
+                                <div class="info-row level-container">
+                                    <span><span class="emoji-icon">🎓</span><span class="level-name" data-full-text="{row['Level']}">{row['Level']}</span></span>
                                 </div>
                             </div>
                         </div>
