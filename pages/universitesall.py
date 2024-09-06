@@ -242,11 +242,11 @@ def main():
             st.session_state.filters['country'],
             st.session_state.filters['program_level'],
             st.session_state.filters['field'],
-            st.session_state.filters['specialty'],  # Make sure this matches your filter name
+            'All',  # We're not using a specialty filter, so pass 'All'
             st.session_state.filters['institution_type'],
             st.session_state.filters['tuition_min'],
             st.session_state.filters['tuition_max'],
-            search_query  # Add the search_query parameter here
+            search_query
         )
 
         # Limit to 10,000 for display
