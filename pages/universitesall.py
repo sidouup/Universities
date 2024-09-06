@@ -64,28 +64,26 @@ def main():
     # Custom CSS for modern styling
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-    
     body {
         font-family: 'Roboto', sans-serif;
         background-color: #f9f9f9;
         color: #333333;
     }
-    
+
     .stApp {
         background-color: #ffffff;
     }
-    
+
     .sidebar .sidebar-content {
         background-color: #f8f9fa;
         padding: 15px;
     }
-    
+
     [data-testid="stSidebar"] {
         min-width: 250px !important;
         max-width: 250px !important;
     }
-    
+
     .stSelectbox, .stMultiSelect, .stSlider {
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
@@ -93,7 +91,7 @@ def main():
         padding: 8px;
         margin-bottom: 15px;
     }
-    
+
     .university-card {
         background: #ffffff;
         border: 1px solid #e0e0e0;
@@ -107,24 +105,24 @@ def main():
         transition: all 0.3s ease;
         box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
-    
+
     .university-card:hover {
         box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
-    
+
     .university-header {
         display: flex;
         align-items: center;
         margin-bottom: 15px;
     }
-    
+
     .university-logo {
         width: 60px;
         height: 60px;
         margin-right: 15px;
         object-fit: contain;
     }
-    
+
     .university-name {
         font-size: 1.5rem;
         font-weight: bold;
@@ -136,7 +134,7 @@ def main():
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
     }
-    
+
     .speciality-name {
         font-size: 1rem;
         margin-bottom: 15px;
@@ -144,7 +142,7 @@ def main():
         text-align: left;
         text-decoration: underline;
     }
-    
+
     .info-container {
         flex-grow: 1;
         display: flex;
@@ -152,7 +150,7 @@ def main():
         justify-content: space-between;
         font-size: 0.95rem;
     }
-    
+
     .info-row {
         display: flex;
         justify-content: space-between;
@@ -160,23 +158,23 @@ def main():
         font-size: 0.9rem;
         color: #666666;
     }
-    
+
     .info-row span:first-child {
         font-weight: bold;
     }
-    
+
     .pagination {
         display: flex;
         justify-content: center;
         align-items: center;
         margin-top: 20px;
     }
-    
+
     .page-info {
         margin: 0 10px;
         font-size: 1.1rem;
     }
-    
+
     .stButton > button {
         background-color: #1e88e5;
         color: white;
@@ -186,11 +184,11 @@ def main():
         font-size: 1rem;
         transition: background-color 0.3s ease;
     }
-    
+
     .stButton > button:hover {
         background-color: #1565c0;
     }
-    
+
     h1, h2, h3 {
         text-align: center;
         font-weight: bold;
@@ -200,7 +198,21 @@ def main():
     """, unsafe_allow_html=True)
 
     # Replace with your Google Sheet ID
-    SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
+    SPREADSHEET_ID = "your_google_sheet_id_here"
+
+    # Load data to extract filter options dynamically
+    client = get_google_sheet_client()
+    sheet = client.open_by_key(SPREADSHEET_ID).sheet1  # Load first sheet, you can adjust this
+    data = sheet.get_all_records()
+    df = pd.DataFrame(data)
+
+    # Extract filter options dynamically from the dataframe
+    major_options = ['All'] + sorted(df['Major'].dropna().unique().tolist())
+    country_options = ['All'] + sorted(df['Country'].dropna().unique().tolist())
+    level_options = ['All'] + sorted(df['Level'].dropna().unique().tolist())
+    field_options = ['All'] + sorted(df['Field'].dropna().unique().tolist())
+    specialty_options = ['All'] + sorted(df['Spec'].dropna().unique().tolist())
+    institution_options = ['All'] + sorted(df['Institution Type'].dropna().unique().tolist())
 
     # Initialize session state for filters
     if 'filters' not in st.session_state:
@@ -215,14 +227,7 @@ def main():
             'tuition_max': 100000  # Default range for tuition
         }
 
-    # Extract filter options dynamically from the dataframe
-    major_options = ['All'] + sorted(df['Major'].dropna().unique().tolist())
-    country_options = ['All'] + sorted(df['Country'].dropna().unique().tolist())
-    level_options = ['All'] + sorted(df['Level'].dropna().unique().tolist())
-    field_options = ['All'] + sorted(df['Field'].dropna().unique().tolist())
-    specialty_options = ['All'] + sorted(df['Spec'].dropna().unique().tolist())
-    institution_options = ['All'] + sorted(df['Institution Type'].dropna().unique().tolist())
-
+    # Display filters in a more compact layout
     with st.form("filter_form"):
         st.subheader("Filter Options")
         col1, col2, col3 = st.columns(3)
@@ -243,6 +248,9 @@ def main():
             max_value=int(df['Tuition Price'].max()),
             value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
         )
+        submit_button = st.form_submit_button("Apply Filters")
+
+    # Load filtered data with a limit of 10,000 rows
     if submit_button:
         df_filtered = load_filtered_data(
             SPREADSHEET_ID,
@@ -257,27 +265,9 @@ def main():
         )
         st.success(f"Showing {len(df_filtered)} results (Max 10,000 rows)")
 
-
-
-
-    # Load filtered data with a limit of 10,000 rows
-    df = load_filtered_data(
-        SPREADSHEET_ID,
-        st.session_state.filters['major'],
-        st.session_state.filters['country'],
-        st.session_state.filters['program_level'],
-        st.session_state.filters['field'],
-        st.session_state.filters['specialty'],
-        st.session_state.filters['institution_type'],
-        st.session_state.filters['tuition_min'],
-        st.session_state.filters['tuition_max']
-    )
-
-    st.subheader(f"Showing {len(df)} results (Max 10,000 rows)")
-
     # Display results with pagination
     items_per_page = 16
-    total_pages = math.ceil(len(df) / items_per_page)
+    total_pages = math.ceil(len(df_filtered) / items_per_page)
 
     if 'current_page' not in st.session_state:
         st.session_state.current_page = 1
@@ -286,58 +276,37 @@ def main():
     end_idx = start_idx + items_per_page
 
     # Display universities in a grid of 4 columns per row
-# Display universities in a grid of 4 columns per row
-    for i in range(0, min(items_per_page, len(df) - start_idx), 4):
+    for i in range(0, min(items_per_page, len(df_filtered) - start_idx), 4):
         cols = st.columns(4)  # Create a grid layout with four columns
         for j in range(4):
-            if i + j < len(df[start_idx:end_idx]):
-                row = df.iloc[start_idx + i + j]
-                prime_tags = [row[f'prime {k}'] for k in range(2, 6) if pd.notna(row[f'prime {k}'])]
-                prime_tags_html = ''.join([f'<span class="prime-tag">{tag}</span>' for tag in prime_tags])
-    
-                # Place each card in the respective column
-                with cols[j]:
-                    st.markdown(f'''
-                    <div class="university-card">
-                        <div class="university-header">
-                            <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
-                            <div class="university-name" style="font-size: 1.2rem;">{row['University Name']}</div>
+            if i + j < len(df_filtered[start_idx:end_idx]):
+                row = df_filtered.iloc[start_idx + i + j]
+                st.markdown(f'''
+                <div class="university-card">
+                    <div class="university-header">
+                        <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
+                        <div class="university-name" style="font-size: 1.2rem;">{row['University Name']}</div>
+                    </div>
+                    <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
+                        {row['Speciality']}
+                    </div>
+                    <div class="info-container">
+                        <div class="info-row">
+                            <span>Location:</span>
+                            <span>{row['City']}, {row['Country']}</span>
                         </div>
-                        <div class="speciality-name" style="font-size: 1rem; font-weight: bold; text-decoration: underline;">
-                            {row['Speciality']}
+                        <div class="info-row">
+                            <span>Tuition:</span>
+                            <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
                         </div>
-                        <div class="prime-tags">{prime_tags_html}</div>
-                        <div class="info-container">
-                            <div>
-                                <div class="info-row">
-                                    <span>Location:</span>
-                                    <span>{row['City']}, {row['Country']}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span>Tuition:</span>
-                                    <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
-                                </div>
-                                <div class="info-row">
-                                    <span>Application Fee:</span>
-                                    <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span>Duration:</span>
-                                    <span>{row['Duration']}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span>Program Level:</span>
-                                    <span>{row['Level']}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span>Field:</span>
-                                    <span>{row['Field']}</span>
-                                </div>
-                            </div>
+                        <div class="info-row">
+                            <span>Application Fee:</span>
+                            <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
                         </div>
                     </div>
-                    ''', unsafe_allow_html=True)
-    
+                </div>
+                ''', unsafe_allow_html=True)
+
     # Pagination controls
     col1, col2, col3 = st.columns([1, 2, 1])
     with col1:
@@ -355,3 +324,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
