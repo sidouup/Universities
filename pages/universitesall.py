@@ -256,7 +256,7 @@ def main():
             if i + j < len(filtered_data[start_idx:end_idx]):
                 row = filtered_data.iloc[i + j]
                 with cols[j]:
-                    st.markdown(f"""
+                    st.markdown(f'''
                         <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                             <div style="display: flex; align-items: center;">
                                 <img src="{row['Picture']}" style="width: 50px; height: 50px; margin-right: 10px;" alt="{row['University Name']} logo">
