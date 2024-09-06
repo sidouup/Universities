@@ -17,7 +17,7 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
 
 # Function to load data from Google Sheets and apply filters
-def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max, search_query=""):
+def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max, search_query=None):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
     filtered_data = []
@@ -40,16 +40,14 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
         if field_filter != 'All':
             df = df[df['Field'] == field_filter]
         if specialty_filter != 'All':
-            df = df[df['Spec'] == specialty_filter]
+            df = df[df['Speciality'] == specialty_filter]
         if institution_filter != 'All':
             df = df[df['Institution Type'] == institution_filter]
-
-        df = df[(df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
-
-        # Apply search filter if search_query is provided
         if search_query:
             df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
                     df['Speciality'].str.contains(search_query, case=False, na=False)]
+
+        df = df[(df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
 
         filtered_data.append(df)
 
@@ -59,7 +57,7 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
 
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
-    
+
     # Custom CSS to make the card more compact
     st.markdown("""
     <style>
@@ -86,9 +84,9 @@ def main():
         background: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 15px;
-        padding: 10px;  /* Reduced padding */
+        padding: 10px;
         margin-bottom: 20px;
-        min-height: 400px;  /* Reduced height */
+        min-height: 400px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -101,11 +99,11 @@ def main():
     .university-header {
         display: flex;
         align-items: center;
-        margin-bottom: 5px;  /* Reduced margin */
+        margin-bottom: 5px;
     }
     .university-logo {
         width: 50px;
-        height: 50px;  /* Reduced size */
+        height: 50px;
         margin-right: 10px;
         object-fit: contain;
     }
@@ -131,12 +129,12 @@ def main():
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        font-size: 0.9rem;  /* Reduced font size */
+        font-size: 0.9rem;
     }
     .info-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 5px;  /* Reduced margin */
+        margin-bottom: 5px;
         font-size: 0.9rem;
         color: #666666;
     }
@@ -179,19 +177,19 @@ def main():
     # Load data to extract filter options dynamically
     client = get_google_sheet_client()
     sheets = client.open_by_key(SPREADSHEET_ID).worksheets()
+    combined_df = pd.DataFrame()
 
-    # Merge all sheets into one dataframe
-    data = []
     for sheet in sheets:
-        data.extend(sheet.get_all_records())
-    df = pd.DataFrame(data)
+        data = sheet.get_all_records()
+        df = pd.DataFrame(data)
+        combined_df = pd.concat([combined_df, df], ignore_index=True)
 
     # Extract filter options dynamically from the dataframe
-    major_options = ['All'] + sorted(df['Major'].dropna().unique().tolist())
-    country_options = ['All'] + sorted(df['Country'].dropna().unique().tolist())
-    level_options = ['All'] + sorted(df['Level'].dropna().unique().tolist())
-    field_options = ['All'] + sorted(df['Field'].dropna().unique().tolist())
-    institution_options = ['All'] + sorted(df['Institution Type'].dropna().unique().tolist())
+    major_options = ['All'] + sorted(combined_df['Major'].dropna().unique().tolist())
+    country_options = ['All'] + sorted(combined_df['Country'].dropna().unique().tolist())
+    level_options = ['All'] + sorted(combined_df['Level'].dropna().unique().tolist())
+    field_options = ['All'] + sorted(combined_df['Field'].dropna().unique().tolist())
+    institution_options = ['All'] + sorted(combined_df['Institution Type'].dropna().unique().tolist())
 
     # Initialize session state for filters
     if 'filters' not in st.session_state:
@@ -205,8 +203,8 @@ def main():
             'tuition_max': 100000  # Default range for tuition
         }
 
-    # Add search bar for Speciality and University Name
-    search_query = st.text_input("Search by University Name or Speciality")
+    # Display search bar for specialities and university names
+    search_query = st.text_input("Search by University Name or Speciality", value="")
 
     # Display filters in a compact layout
     with st.form("filter_form"):
@@ -224,8 +222,8 @@ def main():
         # Tuition slider across all columns
         st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
             "Tuition Fee Range (CAD)",
-            min_value=int(df['Tuition Price'].min()),
-            max_value=int(df['Tuition Price'].max()),
+            min_value=int(combined_df['Tuition Price'].min()),
+            max_value=int(combined_df['Tuition Price'].max()),
             value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
         )
         submit_button = st.form_submit_button("Apply Filters")
@@ -233,7 +231,7 @@ def main():
     # Load filtered data with a limit of 10,000 rows only for display, but apply the filters on the whole data
     if submit_button or search_query:
         df_filtered = load_filtered_data(
-            SPREADSHEET_ID,
+            SP            READSHEET_ID,
             st.session_state.filters['major'],
             st.session_state.filters['country'],
             st.session_state.filters['program_level'],
@@ -241,7 +239,7 @@ def main():
             st.session_state.filters['institution_type'],
             st.session_state.filters['tuition_min'],
             st.session_state.filters['tuition_max'],
-            search_query=search_query
+            search_query  # Pass the search query to the filtering function
         )
 
         # Limit to 10,000 for display
@@ -249,6 +247,9 @@ def main():
             df_filtered = df_filtered.sample(n=10000, random_state=42)
 
         st.success(f"Showing {len(df_filtered)} results (Max 10,000 rows)")
+
+    else:
+        df_filtered = combined_df  # Default to showing all data initially
 
     # Display results with pagination
     items_per_page = 16
@@ -276,16 +277,8 @@ def main():
                         <div class="speciality-name">{row['Speciality']}</div>
                         <div class="info-container">
                             <div class="info-row">
-                                <span>Campus:</span>
-                                <span>{row['City']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Level:</span>
-                                <span>{row['Level']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Duration:</span>
-                                <span>{row['Duration']}</span>
+                                <span>Location:</span>
+                                <span>{row['City']}, {row['Country']}</span>
                             </div>
                             <div class="info-row">
                                 <span>Tuition:</span>
@@ -294,6 +287,14 @@ def main():
                             <div class="info-row">
                                 <span>Application Fee:</span>
                                 <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Duration:</span>
+                                <span>{row['Duration']}</span>
+                            </div>
+                            <div class="info-row">
+                                <span>Level:</span>
+                                <span>{row['Level']}</span>
                             </div>
                         </div>
                     </div>
