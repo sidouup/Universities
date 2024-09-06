@@ -153,6 +153,7 @@ def main():
     }
     </style>
     """, unsafe_allow_html=True)
+    st.title("🎓 University Search Tool")
 
     # Google Sheet ID
     # Google Sheet ID
@@ -184,31 +185,31 @@ def main():
     if 'search_query' not in st.session_state:
         st.session_state.search_query = ""
 
-    search_query = st.text_input("Search by University Name or Speciality", value=st.session_state.search_query)
+    search_query = st.text_input("🔍 Search by University Name or Speciality", value=st.session_state.search_query)
 
     with st.form("filter_form"):
-        st.subheader("Filter Options")
+        st.subheader("🔎 Filter Options")
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.session_state.filters['major'] = st.selectbox("Major", major_options, index=major_options.index(st.session_state.filters['major']))
-            st.session_state.filters['country'] = st.selectbox("Country", country_options, index=country_options.index(st.session_state.filters['country']))
+            st.session_state.filters['major'] = st.selectbox("📚 Major", major_options, index=major_options.index(st.session_state.filters['major']))
+            st.session_state.filters['country'] = st.selectbox("🌎 Country", country_options, index=country_options.index(st.session_state.filters['country']))
         with col2:
-            st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options, index=level_options.index(st.session_state.filters['program_level']))
-            st.session_state.filters['field'] = st.selectbox("Field", field_options, index=field_options.index(st.session_state.filters['field']))
+            st.session_state.filters['program_level'] = st.selectbox("🎓 Program Level", level_options, index=level_options.index(st.session_state.filters['program_level']))
+            st.session_state.filters['field'] = st.selectbox("🔬 Field", field_options, index=field_options.index(st.session_state.filters['field']))
         with col3:
-            st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options, index=institution_options.index(st.session_state.filters['institution_type']))
+            st.session_state.filters['institution_type'] = st.selectbox("🏛️ Institution Type", institution_options, index=institution_options.index(st.session_state.filters['institution_type']))
         
         st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
-            "Tuition Fee Range (CAD)",
+            "💰 Tuition Fee Range (CAD)",
             min_value=int(all_data['Tuition Price'].min()),
             max_value=int(all_data['Tuition Price'].max()),
             value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
         )
         
-        submit_button = st.form_submit_button("Apply Filters")
+        submit_button = st.form_submit_button("🔍 Apply Filters")
 
     # Reset button outside the form
-    reset_button = st.button("Reset Filters")
+    reset_button = st.button("🔄 Reset Filters")
 
     # Handle reset button click
     if reset_button:
@@ -262,27 +263,27 @@ def main():
                             <div class="university-name">{row['University Name']}</div>
                         </div>
                         <div class="speciality-container">
-                            <div class="speciality-name" data-full-text="{row['Speciality']}">{row['Speciality']}</div>
+                            <div class="speciality-name" data-full-text="{row['Speciality']}">🎯 {row['Speciality']}</div>
                         </div>
                         <div class="info-container">
                             <div class="info-row">
-                                <span>Location:</span>
+                                <span><span class="emoji-icon">📍</span>Location:</span>
                                 <span>{row['City']}, {row['Country']}</span>
                             </div>
                             <div class="info-row">
-                                <span>Tuition:</span>
+                                <span><span class="emoji-icon">💰</span>Tuition:</span>
                                 <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
                             </div>
                             <div class="info-row">
-                                <span>Application Fee:</span>
+                                <span><span class="emoji-icon">📝</span>Application Fee:</span>
                                 <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
                             </div>
                             <div class="info-row">
-                                <span>Duration:</span>
+                                <span><span class="emoji-icon">⏳</span>Duration:</span>
                                 <span>{row['Duration']}</span>
                             </div>
                             <div class="info-row">
-                                <span>Level:</span>
+                                <span><span class="emoji-icon">🎓</span>Level:</span>
                                 <span>{row['Level']}</span>
                             </div>
                         </div>
@@ -297,11 +298,12 @@ def main():
                 st.session_state.current_page -= 1
                 st.rerun()
     with col2:
-        st.markdown(f'<div class="page-info">Page {st.session_state.current_page} of {total_pages}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align: center; color: #4b5563;">Page {st.session_state.current_page} of {total_pages}</div>', unsafe_allow_html=True)
     with col3:
         if st.session_state.current_page < total_pages:
             if st.button("Next ▶"):
                 st.session_state.current_page += 1
                 st.rerun()
+
 if __name__ == "__main__":
     main()
