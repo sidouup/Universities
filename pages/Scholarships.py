@@ -5,7 +5,7 @@ from google.oauth2.service_account import Credentials
 import math
 
 st.set_page_config(layout="wide", page_title="University Search Tool")
-st.title("Scholarships prochainmnt ......")
+st.title("Scholarships prochainement......")
 # Add the image in the center of the page
 st.markdown("""
 <div style="text-align:center;">
