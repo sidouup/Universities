@@ -1,3 +1,5 @@
+
+
 import streamlit as st
 import gspread
 import pandas as pd
@@ -17,7 +19,7 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
 
 # Function to load all data from Google Sheets
-@st.cache_data
+@st.cache_data(ttl=3600)
 def load_all_data(spreadsheet_id):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
@@ -37,8 +39,8 @@ def load_all_data(spreadsheet_id):
     return combined_df
 
 # Function to apply filters to the cached data
+@st.cache_data(ttl=3600)
 def apply_filters(df, major_filter, country_filter, level_filter, field_filter, institution_filter, tuition_min, tuition_max, search_query):
-    # Apply filters incrementally
     if major_filter != 'All':
         df = df[df['Major'] == major_filter]
     if country_filter != 'All':
@@ -50,10 +52,8 @@ def apply_filters(df, major_filter, country_filter, level_filter, field_filter, 
     if institution_filter != 'All':
         df = df[df['Institution Type'] == institution_filter]
 
-    # Filter by tuition range
     df = df[df['Tuition Price'].notna() & (df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
 
-    # Apply search query filter
     if search_query:
         df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
                 df['Speciality'].str.contains(search_query, case=False, na=False)]
@@ -176,7 +176,7 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # Replace with your Google Sheet ID
+    # Google Sheet ID
     SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
 
     # Load all data once
@@ -189,23 +189,6 @@ def main():
     field_options = ['All'] + sorted(all_data['Field'].dropna().unique().tolist())
     institution_options = ['All'] + sorted(all_data['Institution Type'].dropna().unique().tolist())
 
-    # Load data to extract filter options dynamically
-    client = get_google_sheet_client()
-    sheets = client.open_by_key(SPREADSHEET_ID).worksheets()
-    combined_df = pd.DataFrame()
-
-    for sheet in sheets:
-        data = sheet.get_all_records()
-        df = pd.DataFrame(data)
-        combined_df = pd.concat([combined_df, df], ignore_index=True)
-
-    # Extract filter options dynamically from the dataframe
-    major_options = ['All'] + sorted(combined_df['Major'].dropna().unique().tolist())
-    country_options = ['All'] + sorted(combined_df['Country'].dropna().unique().tolist())
-    level_options = ['All'] + sorted(combined_df['Level'].dropna().unique().tolist())
-    field_options = ['All'] + sorted(combined_df['Field'].dropna().unique().tolist())
-    institution_options = ['All'] + sorted(combined_df['Institution Type'].dropna().unique().tolist())
-
     # Initialize session state for filters
     if 'filters' not in st.session_state:
         st.session_state.filters = {
@@ -215,13 +198,11 @@ def main():
             'field': 'All',
             'institution_type': 'All',
             'tuition_min': 0,
-            'tuition_max': 100000  # Default range for tuition
+            'tuition_max': 100000
         }
 
-    # Display search bar for specialities and university names
     search_query = st.text_input("Search by University Name or Speciality", value="")
 
-    # Display filters in a compact layout
     with st.form("filter_form"):
         st.subheader("Filter Options")
         col1, col2, col3 = st.columns(3)
@@ -234,18 +215,16 @@ def main():
         with col3:
             st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
         
-        # Tuition slider across all columns
         st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
             "Tuition Fee Range (CAD)",
-            min_value=int(combined_df['Tuition Price'].min()),
-            max_value=int(combined_df['Tuition Price'].max()),
+            min_value=int(all_data['Tuition Price'].min()),
+            max_value=int(all_data['Tuition Price'].max()),
             value=(st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'])
         )
         submit_button = st.form_submit_button("Apply Filters")
 
-    # Load filtered data with a limit of 10,000 rows only for display, but apply the filters on the whole data
     if submit_button or search_query:
-        df_filtered = apply_filters(
+        filtered_data = apply_filters(
             all_data,
             st.session_state.filters['major'],
             st.session_state.filters['country'],
@@ -256,19 +235,13 @@ def main():
             st.session_state.filters['tuition_max'],
             search_query
         )
-
-        # Limit to 10,000 for display
-        if len(df_filtered) > 10000:
-            df_filtered = df_filtered.sample(n=10000, random_state=42)
-
-        st.success(f"Showing {len(df_filtered)} results (Max 10,000 rows)")
-
+        st.session_state.filtered_data = filtered_data
     else:
-        df_filtered = all_data
+        filtered_data = st.session_state.get('filtered_data', all_data)
 
-    # Display results with pagination
+    # Pagination setup
     items_per_page = 16
-    total_pages = math.ceil(len(df_filtered) / items_per_page)
+    total_pages = math.ceil(len(filtered_data) / items_per_page)
 
     if 'current_page' not in st.session_state:
         st.session_state.current_page = 1
@@ -276,59 +249,42 @@ def main():
     start_idx = (st.session_state.current_page - 1) * items_per_page
     end_idx = start_idx + items_per_page
 
-    # Display universities in a grid of 4 columns per row
-    for i in range(0, len(df_filtered[start_idx:end_idx]), 4):  # Process 4 items at a time
-        cols = st.columns(4)  # Create 4 columns
+    # Display universities
+    for i in range(0, len(filtered_data[start_idx:end_idx]), 4):
+        cols = st.columns(4)
         for j in range(4):
-            if i + j < len(df_filtered[start_idx:end_idx]):
-                row = df_filtered.iloc[i + j]
-                with cols[j]:  # Assign each card to a column
-                    st.markdown(f'''
-                    <div class="university-card">
-                        <div class="university-header">
-                            <img src="{row['Picture']}" class="university-logo" alt="{row['University Name']} logo">
-                            <div class="university-name">{row['University Name']}</div>
-                        </div>
-                        <div class="speciality-name">{row['Speciality']}</div>
-                        <div class="info-container">
-                            <div class="info-row">
-                                <span>Location:</span>
-                                <span>{row['City']}, {row['Country']}</span>
+            if i + j < len(filtered_data[start_idx:end_idx]):
+                row = filtered_data.iloc[i + j]
+                with cols[j]:
+                    st.markdown(f"""
+                        <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center;">
+                                <img src="{row['Picture']}" style="width: 50px; height: 50px; margin-right: 10px;" alt="{row['University Name']} logo">
+                                <div style="font-size: 18px; font-weight: bold;">{row['University Name']}</div>
                             </div>
-                            <div class="info-row">
-                                <span>Tuition:</span>
-                                <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Application Fee:</span>
-                                <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Duration:</span>
-                                <span>{row['Duration']}</span>
-                            </div>
-                            <div class="info-row">
-                                <span>Level:</span>
-                                <span>{row['Level']}</span>
+                            <div style="margin-top: 10px;">
+                                <div><strong>Location:</strong> {row['City']}, {row['Country']}</div>
+                                <div><strong>Tuition:</strong> ${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</div>
+                                <div><strong>Application Fee:</strong> ${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</div>
+                                <div><strong>Duration:</strong> {row['Duration']}</div>
+                                <div><strong>Level:</strong> {row['Level']}</div>
                             </div>
                         </div>
-                    </div>
                     ''', unsafe_allow_html=True)
-    
-    # Pagination controls
+
     col1, col2, col3 = st.columns([1, 2, 1])
     with col1:
         if st.session_state.current_page > 1:
             if st.button("◀ Previous"):
                 st.session_state.current_page -= 1
-                st.rerun()
+                st.experimental_rerun()
     with col2:
         st.markdown(f'<div class="page-info">Page {st.session_state.current_page} of {total_pages}</div>', unsafe_allow_html=True)
     with col3:
         if st.session_state.current_page < total_pages:
             if st.button("Next ▶"):
                 st.session_state.current_page += 1
-                st.rerun()
+                st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
