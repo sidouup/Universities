@@ -1,67 +1,7 @@
-
-import streamlit as st
-import gspread
-import pandas as pd
-from google.oauth2.service_account import Credentials
-import math
-
-# Use your service account info from Streamlit secrets
-SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
-
-# Define the scopes
-SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
-
-# Authenticate and build the Google Sheets service
-@st.cache_resource
-def get_google_sheet_client():
-    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
-    return gspread.authorize(creds)
-
-# Function to load all data from Google Sheets
-@st.cache_data(ttl=3600)
-def load_all_data(spreadsheet_id):
-    client = get_google_sheet_client()
-    sheets = client.open_by_key(spreadsheet_id).worksheets()
-    all_data = []
-
-    for sheet in sheets:
-        data = sheet.get_all_records()
-        df = pd.DataFrame(data)
-        all_data.append(df)
-
-    # Combine all data
-    combined_df = pd.concat(all_data, ignore_index=True)
-    
-    # Ensure the 'Tuition Price' column is numeric
-    combined_df['Tuition Price'] = pd.to_numeric(combined_df['Tuition Price'], errors='coerce')
-    
-    return combined_df
-
-# Function to apply filters to the data
-def apply_filters(df, major_filter, country_filter, level_filter, field_filter, institution_filter, tuition_min, tuition_max, search_query):
-    if major_filter != 'All':
-        df = df[df['Major'] == major_filter]
-    if country_filter != 'All':
-        df = df[df['Country'] == country_filter]
-    if level_filter != 'All':
-        df = df[df['Level'] == level_filter]
-    if field_filter != 'All':
-        df = df[df['Field'] == field_filter]
-    if institution_filter != 'All':
-        df = df[df['Institution Type'] == institution_filter]
-
-    df = df[df['Tuition Price'].notna() & (df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
-
-    if search_query:
-        df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
-                df['Speciality'].str.contains(search_query, case=False, na=False)]
-
-    return df
-
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
 
-    # Custom CSS (unchanged)
+    # Custom CSS
     st.markdown("""
     <style>
     body {
@@ -121,7 +61,7 @@ def main():
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
     }
-    .specialty-name {
+    .speciality-name {
         font-size: 1rem;
         font-weight: bold;
         color: #555555;
@@ -132,8 +72,9 @@ def main():
         overflow: hidden;
         text-overflow: ellipsis;
         cursor: pointer;
+        position: relative;
     }
-    .specialty-name:hover::after {
+    .speciality-name:hover::after {
         content: attr(data-full-text);
         position: absolute;
         background: #ffffff;
@@ -144,7 +85,10 @@ def main():
         white-space: normal;
         word-wrap: break-word;
         max-width: 300px;
+        top: 100%;
+        left: 0;
     }
+    .info-container {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
@@ -182,11 +126,6 @@ def main():
     }
     .stButton > button:hover {
         background-color: #1565c0;
-    }
-    h1, h2, h3 {
-        text-align: center;
-        font-weight: bold;
-        color: #333;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -259,7 +198,7 @@ def main():
     )
 
     # Pagination setup
-    items_per_page = 24
+    items_per_page = 16
     total_pages = math.ceil(len(filtered_data) / items_per_page)
 
     start_idx = (st.session_state.current_page - 1) * items_per_page
@@ -304,6 +243,7 @@ def main():
                     </div>
                     ''', unsafe_allow_html=True)
 
+    # Pagination controls
     col1, col2, col3 = st.columns([1, 2, 1])
     with col1:
         if st.session_state.current_page > 1:
@@ -317,6 +257,3 @@ def main():
             if st.button("Next ▶"):
                 st.session_state.current_page += 1
                 st.rerun()
-
-if __name__ == "__main__":
-    main()
