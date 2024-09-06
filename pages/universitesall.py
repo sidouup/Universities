@@ -242,10 +242,11 @@ def main():
             st.session_state.filters['country'],
             st.session_state.filters['program_level'],
             st.session_state.filters['field'],
+            st.session_state.filters['specialty'],  # Make sure this matches your filter name
             st.session_state.filters['institution_type'],
             st.session_state.filters['tuition_min'],
             st.session_state.filters['tuition_max'],
-            search_query  # Pass the search query to the filtering function
+            search_query  # Add the search_query parameter here
         )
 
         # Limit to 10,000 for display
@@ -255,7 +256,13 @@ def main():
         st.success(f"Showing {len(df_filtered)} results (Max 10,000 rows)")
 
     else:
-        df_filtered = combined_df  # Default to showing all data initially
+        # Load all data when no filters are applied
+        df_filtered = load_filtered_data(
+            SPREADSHEET_ID,
+            'All', 'All', 'All', 'All', 'All', 'All',
+            0, float('inf'),  # Set min to 0 and max to infinity for tuition range
+            ""  # Empty search query
+        )
 
     # Display results with pagination
     items_per_page = 16
