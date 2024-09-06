@@ -64,147 +64,144 @@ def main():
         # Custom CSS
     st.markdown("""
     <style>
-        .university-card {
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-            height: 350px;  /* Fixed height */
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }
-        .university-card:hover {
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        }
-        .university-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            height: 60px;  /* Fixed height for logo and name */
-        }
-        .university-logo {
-            width: 50px;
-            height: 50px;
-            margin-right: 10px;
-            object-fit: contain;
-        }
-        .university-name {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #333333;
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-        .speciality-container {
-            height: 50px;  /* Fixed height for specialty */
-            margin-bottom: 10px;
-            position: relative;
-        }
-        .speciality-name {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #555555;
-            text-decoration: underline;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-        }
-        .speciality-name:hover::after {
-            content: attr(data-full-text);
-            position: absolute;
-            background: #ffffff;
-            border: 1px solid #ddd;
-            padding: 5px;
-            border-radius: 5px;
-            z-index: 1;
-            white-space: normal;
-            word-wrap: break-word;
-            max-width: 300px;
-            top: 100%;
-            left: 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        .info-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.85rem;
-            color: #666666;
-        }
-        .info-row span:first-child {
-            font-weight: bold;
-        }
-        .emoji-icon {
-            font-size: 1rem;
-            margin-right: 4px;
-        }
-    .level-container {
-        position: relative;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center; /* Align icon and text in the same line */
-    }
-    
-    .level-container span {
-        display: inline-block; /* Keep icon and text together */
-        overflow: hidden;
-        white-space: nowrap; /* Prevent wrapping */
-        text-overflow: ellipsis; /* Add ellipsis for overflow */
-    }
-    
-    .emoji-icon {
-        font-size: 1rem;
-        margin-right: 4px;
-        display: inline-block;
-    }
-    
-    .level-name {
-        font-size: 0.9rem;
-        font-weight: bold;
-        color: #555555;
-        overflow: hidden;
-        white-space: nowrap; /* Prevent wrapping */
-        text-overflow: ellipsis; /* Add ellipsis if too long */
-        cursor: pointer;
-        max-width: calc(100% - 1rem); /* Adjust width to ensure ellipsis works with icon */
-    }
-    .level-name:hover::after {
-        content: attr(data-full-text);
-        position: absolute;
-        background: #ffffff;
-        border: 1px solid #ddd;
-        padding: 5px;
-        border-radius: 5px;
-        z-index: 1;
-        white-space: normal;
-        word-wrap: break-word;
-        max-width: 300px;
-        top: 100%;
-        left: 0;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-        .page-info {
-            text-align: center;
-            color: #4b5563;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+.university-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    height: 350px;  /* Fixed height */
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.university-card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+.university-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    height: 60px;  /* Fixed height for logo and name */
+}
+.university-logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    object-fit: contain;
+}
+.university-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333333;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.speciality-container {
+    height: 50px;  /* Fixed height for specialty */
+    margin-bottom: 10px;
+    position: relative;
+}
+.speciality-name {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #555555;
+    text-decoration: underline;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+.speciality-name:hover::after {
+    content: attr(data-full-text);
+    position: absolute;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 1;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 300px;
+    top: 100%;
+    left: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.info-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+    color: #666666;
+}
+.info-row span:first-child {
+    font-weight: bold;
+}
+.emoji-icon {
+    font-size: 1rem;
+    margin-right: 4px;
+    display: inline-block;
+}
+
+/* Level specific styling */
+.level-container {
+    position: relative;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center; /* Aligns icon and text in the same line */
+}
+.level-container span {
+    display: inline-block; /* Keep icon and text together */
+    overflow: hidden;
+    white-space: nowrap; /* Prevent text wrapping */
+    text-overflow: ellipsis; /* Add ellipsis for overflow */
+}
+.level-name {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #555555;
+    overflow: hidden;
+    white-space: nowrap; /* Prevent wrapping */
+    text-overflow: ellipsis; /* Add ellipsis if too long */
+    cursor: pointer;
+    max-width: calc(100% - 1rem); /* Ensure the ellipsis works with the icon */
+}
+.level-name:hover::after {
+    content: attr(data-full-text);
+    position: absolute;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 1;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 300px;
+    top: 100%;
+    left: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Pagination styling */
+.page-info {
+    text-align: center;
+    color: #4b5563;
+    font-weight: bold;
+    margin-top: 10px;
+}
     </style>
     """, unsafe_allow_html=True)
     
