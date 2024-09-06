@@ -19,37 +19,40 @@ def get_google_sheet_client():
 # Function to load data from Google Sheets and apply filters
 def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max):
     client = get_google_sheet_client()
-    sheets = client.open_by_key(spreadsheet_id).worksheets()
-    filtered_data = []
+    sheets = client.open_by_key(spreadsheet_id).worksheets()  # Get all sheets
+    combined_data = []  # Store combined data
 
     for sheet in sheets:
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
-
-        # Convert numeric fields
+        
+        # Convert numeric fields to avoid errors during filtering
         df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce')
         df['Application Fee Price'] = pd.to_numeric(df['Application Fee Price'], errors='coerce')
 
-        # Apply filters incrementally on all data
-        if major_filter != 'All':
-            df = df[df['Major'] == major_filter]
-        if country_filter != 'All':
-            df = df[df['Country'] == country_filter]
-        if level_filter != 'All':
-            df = df[df['Level'] == level_filter]
-        if field_filter != 'All':
-            df = df[df['Field'] == field_filter]
-        if specialty_filter != 'All':
-            df = df[df['Spec'] == specialty_filter]
-        if institution_filter != 'All':
-            df = df[df['Institution Type'] == institution_filter]
+        # Add the dataframe for this sheet to the combined data list
+        combined_data.append(df)
 
-        df = df[(df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
+    # Concatenate all data from multiple sheets
+    combined_df = pd.concat(combined_data, ignore_index=True)
 
-        filtered_data.append(df)
+    # Apply filters incrementally to the combined data
+    if major_filter != 'All':
+        combined_df = combined_df[combined_df['Major'] == major_filter]
+    if country_filter != 'All':
+        combined_df = combined_df[combined_df['Country'] == country_filter]
+    if level_filter != 'All':
+        combined_df = combined_df[combined_df['Level'] == level_filter]
+    if field_filter != 'All':
+        combined_df = combined_df[combined_df['Field'] == field_filter]
+    if specialty_filter != 'All':
+        combined_df = combined_df[combined_df['Spec'] == specialty_filter]
+    if institution_filter != 'All':
+        combined_df = combined_df[combined_df['Institution Type'] == institution_filter]
 
-    # Combine all filtered data
-    combined_df = pd.concat(filtered_data, ignore_index=True)
+    # Apply tuition filter
+    combined_df = combined_df[(combined_df['Tuition Price'] >= tuition_min) & (combined_df['Tuition Price'] <= tuition_max)]
+
     return combined_df
 
 def main():
