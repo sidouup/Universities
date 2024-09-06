@@ -171,7 +171,7 @@ def main():
     max-width: 100%; /* Ensure it fits in the available space */
 }
 .level-name {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: bold;
     color: #555555;
     overflow: hidden;
