@@ -157,19 +157,18 @@ def main():
     .level-container {
         position: relative;
         margin-bottom: 10px;
-        height: 30px; /* Adjust height as needed */
+        height: auto; /* Automatically adjusts height */
     }
     .level-name {
         font-size: 0.9rem;
         font-weight: bold;
         color: #555555;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;  /* Only allow one line */
-        -webkit-box-orient: vertical;
+        display: inline-block; /* Ensures text stays on one line */
         overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;  /* Prevent wrapping */
+        white-space: nowrap; /* Prevent wrapping */
+        text-overflow: ellipsis; /* Ellipsis when text is too long */
         cursor: pointer;
+        max-width: 100%; /* Make sure it doesn't overflow the card */
     }
     .level-name:hover::after {
         content: attr(data-full-text);
