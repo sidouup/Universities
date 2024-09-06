@@ -61,98 +61,139 @@ def apply_filters(df, major_filter, country_filter, level_filter, field_filter, 
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
 
-    # Custom CSS
+        # Custom CSS
     st.markdown("""
     <style>
-    /* ... (previous CSS remains unchanged) ... */
-    .university-card {
-        background: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 15px;
-        padding: 15px;
-        margin-bottom: 20px;
-        height: 350px;  /* Fixed height */
-        display: flex;
-        flex-direction: column;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
-    .university-card:hover {
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    }
-    .university-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-        height: 60px;  /* Fixed height for logo and name */
-    }
-    .university-logo {
-        width: 50px;
-        height: 50px;
-        margin-right: 10px;
-        object-fit: contain;
-    }
-    .university-name {
-        font-size: 1.1rem;
-        font-weight: bold;
-        color: #333333;
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-    }
-    .speciality-container {
-        height: 50px;  /* Fixed height for specialty */
-        margin-bottom: 10px;
-        position: relative;
-    }
-    .speciality-name {
-        font-size: 0.9rem;
-        font-weight: bold;
-        color: #555555;
-        text-decoration: underline;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        cursor: pointer;
-    }
-    .speciality-name:hover::after {
-        content: attr(data-full-text);
-        position: absolute;
-        background: #ffffff;
-        border: 1px solid #ddd;
-        padding: 5px;
-        border-radius: 5px;
-        z-index: 1;
-        white-space: normal;
-        word-wrap: break-word;
-        max-width: 300px;
-        top: 100%;
-        left: 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    .info-container {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 5px;
-        font-size: 0.85rem;
-        color: #666666;
-    }
-    .info-row span:first-child {
-        font-weight: bold;
-    }
+        .university-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            height: 350px;  /* Fixed height */
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        .university-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        .university-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            height: 60px;  /* Fixed height for logo and name */
+        }
+        .university-logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+        .university-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333333;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .speciality-container {
+            height: 50px;  /* Fixed height for specialty */
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .speciality-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555555;
+            text-decoration: underline;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        .speciality-name:hover::after {
+            content: attr(data-full-text);
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 1;
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 300px;
+            top: 100%;
+            left: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .info-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: #666666;
+        }
+        .info-row span:first-child {
+            font-weight: bold;
+        }
+        .emoji-icon {
+            font-size: 1rem;
+            margin-right: 4px;
+        }
+        .level-container {
+            position: relative;
+            margin-bottom: 10px;
+            height: 30px; /* Fixed height for level */
+        }
+        .level-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555555;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;  /* Limit to 1 line */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        .level-name:hover::after {
+            content: attr(data-full-text);
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 1;
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 300px;
+            top: 100%;
+            left: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .page-info {
+            text-align: center;
+            color: #4b5563;
+            font-weight: bold;
+            margin-top: 10px;
+        }
     </style>
     """, unsafe_allow_html=True)
+    
     st.title("🎓 University Search Tool")
 
     # Google Sheet ID
