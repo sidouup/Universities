@@ -1,3 +1,4 @@
+
 import streamlit as st
 import gspread
 import pandas as pd
@@ -57,6 +58,7 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
         combined_df = combined_df.sample(n=10000, random_state=42)
 
     return combined_df
+
 
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
@@ -211,7 +213,6 @@ def main():
     country_options = ['All'] + sorted(df['Country'].dropna().unique().tolist())
     level_options = ['All'] + sorted(df['Level'].dropna().unique().tolist())
     field_options = ['All'] + sorted(df['Field'].dropna().unique().tolist())
-
     institution_options = ['All'] + sorted(df['Institution Type'].dropna().unique().tolist())
 
     # Initialize session state for filters
@@ -221,11 +222,13 @@ def main():
             'country': 'All',
             'program_level': 'All',
             'field': 'All',
-
             'institution_type': 'All',
             'tuition_min': 0,
             'tuition_max': 100000  # Default range for tuition
         }
+
+    # Initialize df_filtered with the entire dataset by default or an empty DataFrame
+    df_filtered = df.copy()
 
     # Display filters in a more compact layout
     with st.form("filter_form"):
@@ -238,7 +241,6 @@ def main():
             st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options)
             st.session_state.filters['field'] = st.selectbox("Field", field_options)
         with col3:
-
             st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
         
         # Tuition slider across all columns
@@ -250,7 +252,7 @@ def main():
         )
         submit_button = st.form_submit_button("Apply Filters")
 
-    # Load filtered data with a limit of 10,000 rows
+    # Load filtered data with a limit of 10,000 rows only if the button is pressed
     if submit_button:
         df_filtered = load_filtered_data(
             SPREADSHEET_ID,
@@ -297,7 +299,6 @@ def main():
                         <div class="info-row">
                             <span>Tuition:</span>
                             <span>${row['Tuition Price']:,.0f} {row['Tuition Currency']}/Year</span>
-                        </div>
                         <div class="info-row">
                             <span>Application Fee:</span>
                             <span>${row['Application Fee Price']:,.0f} {row['Application Fee Currency']}</span>
