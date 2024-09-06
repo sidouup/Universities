@@ -17,7 +17,7 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
 
 # Function to load data from Google Sheets and apply filters
-def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max, search_query=None):
+def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
     filtered_data = []
@@ -26,11 +26,10 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
 
-        # Convert numeric fields and handle errors
-        df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce').fillna(0)
-        df['Application Fee Price'] = pd.to_numeric(df['Application Fee Price'], errors='coerce').fillna(0)
+        # Ensure the 'Tuition Price' column is numeric
+        df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce')
 
-        # Apply filters incrementally on all data
+        # Apply filters incrementally
         if major_filter != 'All':
             df = df[df['Major'] == major_filter]
         if country_filter != 'All':
@@ -43,13 +42,8 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
             df = df[df['Spec'] == specialty_filter]
         if institution_filter != 'All':
             df = df[df['Institution Type'] == institution_filter]
-        
-        # Apply search query filter
-        if search_query:
-            df = df[df['University Name'].str.contains(search_query, case=False, na=False) | 
-                    df['Speciality'].str.contains(search_query, case=False, na=False)]
 
-        # Filter by tuition range
+        # Filter by tuition range, ensuring only numeric values are compared
         df = df[(df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
 
         filtered_data.append(df)
