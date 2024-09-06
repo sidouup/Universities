@@ -1,5 +1,4 @@
 
-
 import streamlit as st
 import gspread
 import pandas as pd
@@ -38,8 +37,7 @@ def load_all_data(spreadsheet_id):
     
     return combined_df
 
-# Function to apply filters to the cached data
-@st.cache_data(ttl=3600)
+# Function to apply filters to the data
 def apply_filters(df, major_filter, country_filter, level_filter, field_filter, institution_filter, tuition_min, tuition_max, search_query):
     if major_filter != 'All':
         df = df[df['Major'] == major_filter]
@@ -63,7 +61,7 @@ def apply_filters(df, major_filter, country_filter, level_filter, field_filter, 
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
 
-    # Custom CSS to make the card more compact
+    # Custom CSS (unchanged)
     st.markdown("""
     <style>
     body {
@@ -189,7 +187,7 @@ def main():
     field_options = ['All'] + sorted(all_data['Field'].dropna().unique().tolist())
     institution_options = ['All'] + sorted(all_data['Institution Type'].dropna().unique().tolist())
 
-    # Initialize session state for filters
+    # Initialize session state for filters and pagination
     if 'filters' not in st.session_state:
         st.session_state.filters = {
             'major': 'All',
@@ -197,23 +195,27 @@ def main():
             'program_level': 'All',
             'field': 'All',
             'institution_type': 'All',
-            'tuition_min': 0,
-            'tuition_max': 100000
+            'tuition_min': int(all_data['Tuition Price'].min()),
+            'tuition_max': int(all_data['Tuition Price'].max())
         }
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = 1
+    if 'search_query' not in st.session_state:
+        st.session_state.search_query = ""
 
-    search_query = st.text_input("Search by University Name or Speciality", value="")
+    search_query = st.text_input("Search by University Name or Speciality", value=st.session_state.search_query)
 
     with st.form("filter_form"):
         st.subheader("Filter Options")
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.session_state.filters['major'] = st.selectbox("Major", major_options)
-            st.session_state.filters['country'] = st.selectbox("Country", country_options)
+            st.session_state.filters['major'] = st.selectbox("Major", major_options, index=major_options.index(st.session_state.filters['major']))
+            st.session_state.filters['country'] = st.selectbox("Country", country_options, index=country_options.index(st.session_state.filters['country']))
         with col2:
-            st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options)
-            st.session_state.filters['field'] = st.selectbox("Field", field_options)
+            st.session_state.filters['program_level'] = st.selectbox("Program Level", level_options, index=level_options.index(st.session_state.filters['program_level']))
+            st.session_state.filters['field'] = st.selectbox("Field", field_options, index=field_options.index(st.session_state.filters['field']))
         with col3:
-            st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options)
+            st.session_state.filters['institution_type'] = st.selectbox("Institution Type", institution_options, index=institution_options.index(st.session_state.filters['institution_type']))
         
         st.session_state.filters['tuition_min'], st.session_state.filters['tuition_max'] = st.slider(
             "Tuition Fee Range (CAD)",
@@ -223,28 +225,25 @@ def main():
         )
         submit_button = st.form_submit_button("Apply Filters")
 
-    if submit_button or search_query:
-        filtered_data = apply_filters(
-            all_data,
-            st.session_state.filters['major'],
-            st.session_state.filters['country'],
-            st.session_state.filters['program_level'],
-            st.session_state.filters['field'],
-            st.session_state.filters['institution_type'],
-            st.session_state.filters['tuition_min'],
-            st.session_state.filters['tuition_max'],
-            search_query
-        )
-        st.session_state.filtered_data = filtered_data
-    else:
-        filtered_data = st.session_state.get('filtered_data', all_data)
+    if submit_button or search_query != st.session_state.search_query:
+        st.session_state.current_page = 1
+        st.session_state.search_query = search_query
+
+    filtered_data = apply_filters(
+        all_data,
+        st.session_state.filters['major'],
+        st.session_state.filters['country'],
+        st.session_state.filters['program_level'],
+        st.session_state.filters['field'],
+        st.session_state.filters['institution_type'],
+        st.session_state.filters['tuition_min'],
+        st.session_state.filters['tuition_max'],
+        st.session_state.search_query
+    )
 
     # Pagination setup
     items_per_page = 16
     total_pages = math.ceil(len(filtered_data) / items_per_page)
-
-    if 'current_page' not in st.session_state:
-        st.session_state.current_page = 1
 
     start_idx = (st.session_state.current_page - 1) * items_per_page
     end_idx = start_idx + items_per_page
@@ -254,7 +253,7 @@ def main():
         cols = st.columns(4)
         for j in range(4):
             if i + j < len(filtered_data[start_idx:end_idx]):
-                row = filtered_data.iloc[i + j]
+                row = filtered_data.iloc[start_idx + i + j]
                 with cols[j]:
                     st.markdown(f'''
                         <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
@@ -288,4 +287,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
