@@ -154,37 +154,38 @@ def main():
             font-size: 1rem;
             margin-right: 4px;
         }
-        .level-container {
-            position: relative;
-            margin-bottom: 10px;
-            height: 30px; /* Fixed height for level */
-        }
-        .level-name {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #555555;
-            display: -webkit-box;
-            -webkit-line-clamp: 1;  /* Limit to 1 line */
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-        }
-        .level-name:hover::after {
-            content: attr(data-full-text);
-            position: absolute;
-            background: #ffffff;
-            border: 1px solid #ddd;
-            padding: 5px;
-            border-radius: 5px;
-            z-index: 1;
-            white-space: normal;
-            word-wrap: break-word;
-            max-width: 300px;
-            top: 100%;
-            left: 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
+    .level-container {
+        position: relative;
+        margin-bottom: 10px;
+        height: 30px; /* Adjust height as needed */
+    }
+    .level-name {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #555555;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;  /* Only allow one line */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;  /* Prevent wrapping */
+        cursor: pointer;
+    }
+    .level-name:hover::after {
+        content: attr(data-full-text);
+        position: absolute;
+        background: #ffffff;
+        border: 1px solid #ddd;
+        padding: 5px;
+        border-radius: 5px;
+        z-index: 1;
+        white-space: normal;
+        word-wrap: break-word;
+        max-width: 300px;
+        top: 100%;
+        left: 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
         .page-info {
             text-align: center;
             color: #4b5563;
