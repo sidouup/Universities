@@ -155,7 +155,7 @@ def main():
         font-size: 1.1rem;
     }
     .stButton > button {
-        background-color: #1e88e5;
+        background-color: #1e88e5;  /* Blue color */
         color: white;
         border: none;
         border-radius: 5px;
