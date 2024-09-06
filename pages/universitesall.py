@@ -164,7 +164,18 @@ def main():
         transition: background-color 0.3s ease;
     }
     .stButton > button:hover {
-        background-color: #1565c0;
+        background-color: #1565c0;  /* Darker blue on hover */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .page-info {
+        margin: 0 10px;
+        font-size: 1.1rem;
+    }
+
     }
     h1, h2, h3 {
         text-align: center;
