@@ -26,9 +26,9 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
 
-        # Convert numeric fields
-        df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce')
-        df['Application Fee Price'] = pd.to_numeric(df['Application Fee Price'], errors='coerce')
+        # Convert numeric fields and handle errors
+        df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce').fillna(0)
+        df['Application Fee Price'] = pd.to_numeric(df['Application Fee Price'], errors='coerce').fillna(0)
 
         # Apply filters incrementally on all data
         if major_filter != 'All':
@@ -40,13 +40,16 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
         if field_filter != 'All':
             df = df[df['Field'] == field_filter]
         if specialty_filter != 'All':
-            df = df[df['Speciality'] == specialty_filter]
+            df = df[df['Spec'] == specialty_filter]
         if institution_filter != 'All':
             df = df[df['Institution Type'] == institution_filter]
+        
+        # Apply search query filter
         if search_query:
-            df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
+            df = df[df['University Name'].str.contains(search_query, case=False, na=False) | 
                     df['Speciality'].str.contains(search_query, case=False, na=False)]
 
+        # Filter by tuition range
         df = df[(df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
 
         filtered_data.append(df)
