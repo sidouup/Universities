@@ -17,7 +17,7 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
 
 # Function to load data from Google Sheets and apply filters
-def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max):
+def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max, search_query):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
     filtered_data = []
@@ -43,8 +43,17 @@ def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filte
         if institution_filter != 'All':
             df = df[df['Institution Type'] == institution_filter]
 
+        # Convert tuition_min and tuition_max to numeric values
+        tuition_min = pd.to_numeric(tuition_min, errors='coerce')
+        tuition_max = pd.to_numeric(tuition_max, errors='coerce')
+
         # Filter by tuition range, ensuring only numeric values are compared
-        df = df[(df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
+        df = df[df['Tuition Price'].notna() & (df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
+
+        # Apply search query filter
+        if search_query:
+            df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
+                    df['Speciality'].str.contains(search_query, case=False, na=False)]
 
         filtered_data.append(df)
 
