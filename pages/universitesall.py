@@ -16,50 +16,49 @@ def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
 
-# Function to load data from Google Sheets and apply filters
-def load_filtered_data(spreadsheet_id, major_filter, country_filter, level_filter, field_filter, specialty_filter, institution_filter, tuition_min, tuition_max, search_query):
+# Function to load all data from Google Sheets
+@st.cache_data
+def load_all_data(spreadsheet_id):
     client = get_google_sheet_client()
     sheets = client.open_by_key(spreadsheet_id).worksheets()
-    filtered_data = []
+    all_data = []
 
     for sheet in sheets:
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
+        all_data.append(df)
 
-        # Ensure the 'Tuition Price' column is numeric
-        df['Tuition Price'] = pd.to_numeric(df['Tuition Price'], errors='coerce')
-
-        # Apply filters incrementally
-        if major_filter != 'All':
-            df = df[df['Major'] == major_filter]
-        if country_filter != 'All':
-            df = df[df['Country'] == country_filter]
-        if level_filter != 'All':
-            df = df[df['Level'] == level_filter]
-        if field_filter != 'All':
-            df = df[df['Field'] == field_filter]
-        if specialty_filter != 'All':
-            df = df[df['Spec'] == specialty_filter]
-        if institution_filter != 'All':
-            df = df[df['Institution Type'] == institution_filter]
-
-        # Convert tuition_min and tuition_max to numeric values
-        tuition_min = pd.to_numeric(tuition_min, errors='coerce')
-        tuition_max = pd.to_numeric(tuition_max, errors='coerce')
-
-        # Filter by tuition range, ensuring only numeric values are compared
-        df = df[df['Tuition Price'].notna() & (df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
-
-        # Apply search query filter
-        if search_query:
-            df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
-                    df['Speciality'].str.contains(search_query, case=False, na=False)]
-
-        filtered_data.append(df)
-
-    # Combine all filtered data
-    combined_df = pd.concat(filtered_data, ignore_index=True)
+    # Combine all data
+    combined_df = pd.concat(all_data, ignore_index=True)
+    
+    # Ensure the 'Tuition Price' column is numeric
+    combined_df['Tuition Price'] = pd.to_numeric(combined_df['Tuition Price'], errors='coerce')
+    
     return combined_df
+
+# Function to apply filters to the cached data
+def apply_filters(df, major_filter, country_filter, level_filter, field_filter, institution_filter, tuition_min, tuition_max, search_query):
+    # Apply filters incrementally
+    if major_filter != 'All':
+        df = df[df['Major'] == major_filter]
+    if country_filter != 'All':
+        df = df[df['Country'] == country_filter]
+    if level_filter != 'All':
+        df = df[df['Level'] == level_filter]
+    if field_filter != 'All':
+        df = df[df['Field'] == field_filter]
+    if institution_filter != 'All':
+        df = df[df['Institution Type'] == institution_filter]
+
+    # Filter by tuition range
+    df = df[df['Tuition Price'].notna() & (df['Tuition Price'] >= tuition_min) & (df['Tuition Price'] <= tuition_max)]
+
+    # Apply search query filter
+    if search_query:
+        df = df[df['University Name'].str.contains(search_query, case=False, na=False) |
+                df['Speciality'].str.contains(search_query, case=False, na=False)]
+
+    return df
 
 def main():
     st.set_page_config(layout="wide", page_title="University Search Tool")
@@ -180,6 +179,16 @@ def main():
     # Replace with your Google Sheet ID
     SPREADSHEET_ID = "14pdY9sOkA0d6_5WtMFh-9Vp2lcO4WbLGCHdwye4s0J4"
 
+    # Load all data once
+    all_data = load_all_data(SPREADSHEET_ID)
+
+    # Extract filter options dynamically from the dataframe
+    major_options = ['All'] + sorted(all_data['Major'].dropna().unique().tolist())
+    country_options = ['All'] + sorted(all_data['Country'].dropna().unique().tolist())
+    level_options = ['All'] + sorted(all_data['Level'].dropna().unique().tolist())
+    field_options = ['All'] + sorted(all_data['Field'].dropna().unique().tolist())
+    institution_options = ['All'] + sorted(all_data['Institution Type'].dropna().unique().tolist())
+
     # Load data to extract filter options dynamically
     client = get_google_sheet_client()
     sheets = client.open_by_key(SPREADSHEET_ID).worksheets()
@@ -236,13 +245,12 @@ def main():
 
     # Load filtered data with a limit of 10,000 rows only for display, but apply the filters on the whole data
     if submit_button or search_query:
-        df_filtered = load_filtered_data(
-            SPREADSHEET_ID,
+        df_filtered = apply_filters(
+            all_data,
             st.session_state.filters['major'],
             st.session_state.filters['country'],
             st.session_state.filters['program_level'],
             st.session_state.filters['field'],
-            'All',  # We're not using a specialty filter, so pass 'All'
             st.session_state.filters['institution_type'],
             st.session_state.filters['tuition_min'],
             st.session_state.filters['tuition_max'],
@@ -256,13 +264,7 @@ def main():
         st.success(f"Showing {len(df_filtered)} results (Max 10,000 rows)")
 
     else:
-        # Load all data when no filters are applied
-        df_filtered = load_filtered_data(
-            SPREADSHEET_ID,
-            'All', 'All', 'All', 'All', 'All', 'All',
-            0, float('inf'),  # Set min to 0 and max to infinity for tuition range
-            ""  # Empty search query
-        )
+        df_filtered = all_data
 
     # Display results with pagination
     items_per_page = 16
