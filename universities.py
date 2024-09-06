@@ -157,18 +157,32 @@ def main():
     .level-container {
         position: relative;
         margin-bottom: 10px;
-        height: auto; /* Automatically adjusts height */
+        display: flex;
+        align-items: center; /* Align icon and text in the same line */
     }
+    
+    .level-container span {
+        display: inline-block; /* Keep icon and text together */
+        overflow: hidden;
+        white-space: nowrap; /* Prevent wrapping */
+        text-overflow: ellipsis; /* Add ellipsis for overflow */
+    }
+    
+    .emoji-icon {
+        font-size: 1rem;
+        margin-right: 4px;
+        display: inline-block;
+    }
+    
     .level-name {
         font-size: 0.9rem;
         font-weight: bold;
         color: #555555;
-        display: inline-block; /* Ensures text stays on one line */
         overflow: hidden;
         white-space: nowrap; /* Prevent wrapping */
-        text-overflow: ellipsis; /* Ellipsis when text is too long */
+        text-overflow: ellipsis; /* Add ellipsis if too long */
         cursor: pointer;
-        max-width: 100%; /* Make sure it doesn't overflow the card */
+        max-width: calc(100% - 1rem); /* Adjust width to ensure ellipsis works with icon */
     }
     .level-name:hover::after {
         content: attr(data-full-text);
