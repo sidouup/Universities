@@ -161,14 +161,14 @@ def main():
     position: relative;
     margin-bottom: 10px;
     display: flex;
-    align-items: center; /* Aligns icon and text in the same line */
+    align-items: center; /* Align icon and text in the same line */
 }
 .level-container span {
     display: inline-block;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis; /* Ensure the text truncates with ellipsis */
-    max-width: calc(100% - 1rem); /* Adjust this based on your layout */
+    max-width: 100%; /* Ensure it fits in the available space */
 }
 .level-name {
     font-size: 0.9rem;
@@ -177,8 +177,7 @@ def main():
     overflow: hidden;
     white-space: nowrap; /* Prevent text from wrapping */
     text-overflow: ellipsis; /* Add ellipsis */
-    cursor: pointer;
-    max-width: calc(100% - 1rem); /* Make sure ellipsis appears */
+    max-width: calc(100% - 1rem); /* Ensure some part of the text is shown */
 }
 .level-name:hover::after {
     content: attr(data-full-text); /* Shows the full content on hover */
