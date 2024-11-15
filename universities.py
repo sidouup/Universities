@@ -3,7 +3,7 @@ import streamlit as st
 # Set page configuration
 st.set_page_config(page_title="The US House - Mise à Jour", page_icon="🌐", layout="centered")
 
-# Custom CSS
+# Custom CSS styling for centered logo and layout
 st.markdown(
     """
     <style>
@@ -14,17 +14,21 @@ st.markdown(
         max-width: 600px;
         margin: auto;
         box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
     }
     .logo {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
         width: 200px;
+        margin: 0 auto;
+        display: block;
+        border-radius: 10px;
     }
     .header {
         text-align: center;
         font-family: Arial, sans-serif;
         color: #1a1a1a;
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 20px;
     }
     .message {
         text-align: center;
@@ -36,6 +40,10 @@ st.markdown(
     .link {
         color: #007bff;
         font-weight: bold;
+        text-decoration: none;
+    }
+    .link:hover {
+        text-decoration: underline;
     }
     .contact {
         text-align: center;
@@ -48,33 +56,37 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Logo
-st.image(
-    "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=228,fit=crop,q=95/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png",
-    use_column_width=False,
-    width=200,
-)
-
-# Header
-st.markdown("<h2 class='header'>Nous avons déménagé vers un nouveau site web !</h2>", unsafe_allow_html=True)
-
-# Message
+# Center the logo
 st.markdown(
     """
-    <p class='message'>
-        Veuillez visiter notre nouveau site et application mis à jour. Connectez-vous avec vos identifiants pour faciliter votre travail :
-        <a class='link' href='https://theushouse-partners.replit.app/' target='_blank'>Visitez ici</a>.
-    </p>
+    <div class="main">
+        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=228,fit=crop,q=95/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" class="logo">
+    </div>
     """,
     unsafe_allow_html=True,
 )
 
-# Contact Info
+# Display the header message
+st.markdown("<h2 class='header'>Nous avons déménagé vers un nouveau site web !</h2>", unsafe_allow_html=True)
+
+# Display the main message
 st.markdown(
     """
-    <p class='contact'>
-        The US House Algeria apprécie votre partenariat et est là pour vous aider. Si vous avez besoin d'aide, contactez-nous sur WhatsApp.
-    </p>
+    <div class='message'>
+        Veuillez visiter notre nouveau site et application mis à jour. Connectez-vous avec vos identifiants pour faciliter votre travail :
+        <a class='link' href='https://theushouse-partners.replit.app/' target='_blank'>Visitez ici</a>.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Display the contact information
+st.markdown(
+    """
+    <div class='contact'>
+        The US House Algeria apprécie votre partenariat et est là pour vous aider. <br>
+        Si vous avez besoin d'aide, contactez-nous sur WhatsApp.
+    </div>
     """,
     unsafe_allow_html=True,
 )
